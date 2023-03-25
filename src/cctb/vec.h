@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <iostream>
 
 template <typename T>
 struct Vec {
@@ -44,15 +45,22 @@ struct Vec {
     return result;
   }
 
-  bool operator==(const Vec& other) {
+  bool operator==(const Vec& other) const {
     if (data.size() != other.data.size()) {
       return false;
     }
-    for (int i = 0; i < data.size(); i++) {
+    for (std::size_t i = 0; i < data.size(); i++) {
       if (data[i] != other.data[i]) {
         return false;
       }
     }
     return true;
+  }
+
+  void Print() const {
+    for (int i = 0; i < data.size(); i++) {
+      std::cout << data[i] << " ";
+    }
+    std::cout << std::endl;
   }
 };

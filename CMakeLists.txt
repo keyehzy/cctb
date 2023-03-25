@@ -9,8 +9,4 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
 add_subdirectory(src)
 add_subdirectory(third-party)
-
-include(CTest)
-if(BUILD_TESTING)
-    add_subdirectory(test)
-endif()
+add_subdirectory(test)

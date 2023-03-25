@@ -27,7 +27,7 @@ struct Matrix {
     return result;
   }
 
-  Matrix print() {
+  Matrix Print() {
     for (int i = 0; i < rows; i++) {
       for (int j = 0; j < cols; j++) {
         std::cout << (*this)(i, j) << " ";

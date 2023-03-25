@@ -35,11 +35,20 @@ class Lattice {
   std::vector<Edge> Edges() const { return m_edges; }
   int Size() const { return m_sites.size(); }
 
-  virtual void PlotSites() const = 0;
-  virtual Matrix<int> AdjMatrix() const = 0;
+  virtual void Plot() const = 0;
+
+  Matrix<int> AdjMatrix() const {
+    Matrix<int> hamiltonian(Size(), Size());
+    for (auto edge : Edges()) {
+      hamiltonian(edge.from_index, edge.to_index) = 1;
+      hamiltonian(edge.to_index, edge.from_index) = 1;
+    }
+    return hamiltonian;
+  }
+
   virtual Matrix<std::complex<float>> HoppingMatrix(float k) const = 0;
 
- private:
+ protected:
   std::vector<Site> m_sites;
   std::vector<Edge> m_edges;
 };
@@ -48,7 +57,7 @@ class OneDimensionalLattice : public Lattice {
  public:
   OneDimensionalLattice(Vec<float> a1) : m_a1(a1) {}
 
-  void PlotSites() const override {
+  void Plot() const override {
     for (const Site &site : Sites()) {
       std::printf("%f %f\n", site.position[0], 0.0);
     }
@@ -58,14 +67,6 @@ class OneDimensionalLattice : public Lattice {
       std::printf("%f %f\n", SiteAt(edge.from_index).position[0] + r, 0.0);
       std::printf("%f %f\n", SiteAt(edge.from_index).position[0] - r, 0.0);
     }
-  }
-
-  Matrix<int> AdjMatrix() const override {
-    Matrix<int> hamiltonian(Size(), Size());
-    for (auto edge : Edges()) {
-      hamiltonian(edge.from_index, edge.to_index) = 1;
-    }
-    return hamiltonian;
   }
 
   Matrix<std::complex<float>> HoppingMatrix(float k) const override {
@@ -80,7 +81,7 @@ class OneDimensionalLattice : public Lattice {
     return hamiltonian;
   }
 
- private:
+ protected:
   Vec<float> m_a1;
 };
 
@@ -96,7 +97,7 @@ class TwoDimensionalLattice : public Lattice {
  public:
   TwoDimensionalLattice(Vec<float> a1, Vec<float> a2) : m_a1(a1), m_a2(a2) {}
 
-  void PlotSites() const override {
+  void Plot() const override {
     std::ofstream sites_file("sites.dat");
     std::ofstream edges_file("edges.dat");
     std::ofstream lattice_file("lattice.dat");
@@ -128,14 +129,6 @@ class TwoDimensionalLattice : public Lattice {
     }
   }
 
-  Matrix<int> AdjMatrix() const override {
-    Matrix<int> hamiltonian(Size(), Size());
-    for (auto edge : Edges()) {
-      hamiltonian(edge.from_index, edge.to_index) = 1;
-    }
-    return hamiltonian;
-  }
-
   Matrix<std::complex<float>> HoppingMatrix(float k) const override {
     Matrix<std::complex<float>> hamiltonian(Size(), Size());
     for (auto edge : Edges()) {
@@ -151,7 +144,7 @@ class TwoDimensionalLattice : public Lattice {
     return hamiltonian;
   }
 
- private:
+ protected:
   Vec<float> m_a1;
   Vec<float> m_a2;
 };
