@@ -21,24 +21,27 @@ The executable will be in `build/src`.
 
 ## Examples:
 
-Right now you can set up 1D and 2D lattices and graph their crystal structure. The following example shows how to set up a 2D square lattice and graph it.
+Right now you can set up 1D and 2D lattices and graph their crystal structure. The following example shows how to set up a Graphene lattice and graph it.
 
 ```c++
 #include "cctb/lattice.h"
 #include "cctb/matrix.h"
 #include "cctb/vec.h"
 
-class SquareLattice : public TwoDimensionalLattice {
+// https://arxiv.org/abs/0709.1163
+class GrapheneLattice : public TwoDimensionalLattice {
  public:
-  SquareLattice(float d) : TwoDimensionalLattice(Vec<float>{d, 0}, Vec<float>{0, d}) {
+  GrapheneLattice() : TwoDimensionalLattice(Vec<float>(1.5f, 0.5f * sqrtf(3.0f)), Vec<float>(1.5f, -0.5f * sqrtf(3.0f))) {
     AddSite(Site(Vec<float>{0, 0}));
-    AddEdge(Edge({0, 1}, 0, 0));
-    AddEdge(Edge({1, 0}, 0, 0));
+    AddSite(Site(Vec<float>{0.5, 0.5f * sqrtf(3.0f)}));
+    AddEdge(Edge({0, 0}, 0, 1));
+    AddEdge(Edge({1, 0}, 1, 0));
+    AddEdge(Edge({1, -1}, 1, 0));
   }
 };
 
 int main(void) {
-  GrapheneLatticeExtended lattice;
+  GrapheneLattice lattice;
   lattice.PlotSites();
   return 0;
 }
@@ -49,6 +52,10 @@ The PlotSites() function will generate a file called `lattice.dat` in the curren
 ```bash
 graph -T png -B lattice.dat > lattice.png
 ```
+
+which will generate the following image:
+
+![Graphene lattice](examples/graphene.png)
 
 ## License:
 
