@@ -7,3 +7,4 @@ add_library(
     cctb.cpp
 )
 target_include_directories(cctb-lib PUBLIC .)
+target_link_libraries(cctb-lib PRIVATE -lm)

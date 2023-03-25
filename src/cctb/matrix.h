@@ -1,16 +1,17 @@
 #pragma once
 
+#include <iostream>
+#include <vector>
+
 template <typename T>
 struct Matrix {
   int rows;
   int cols;
-  T* data;
+  std::vector<T> data;
 
-  Matrix(int rows, int cols) : rows(rows), cols(cols) {
-    data = new T[rows * cols];
-  }
+  Matrix(int rows, int cols) : rows(rows), cols(cols), data(rows * cols) {}
 
-  ~Matrix() { delete[] data; }
+  ~Matrix() {}
 
   T& operator()(int row, int col) { return data[row * cols + col]; }
 
@@ -24,5 +25,15 @@ struct Matrix {
       }
     }
     return result;
+  }
+
+  Matrix print() {
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < cols; j++) {
+        std::cout << (*this)(i, j) << " ";
+      }
+      std::cout << std::endl;
+    }
+    return *this;
   }
 };
