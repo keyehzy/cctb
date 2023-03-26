@@ -1,3 +1,6 @@
+![Build Status](https://github.com/keyehzy/cctb/actions/workflows/cmake.yml/badge.svg)
+![Clang Format](https://github.com/keyehzy/cctb/actions/workflows/clang-format.yml/badge.svg)
+
 # CCTB --- A tightbinding software written in C++
 
 This is a software package for simulating tightbinding models. It aims to be a simple and easy to use, making adding new models straightforward. Once you have a model, you can use it to calculate the band structure, density of states, and other properties.
