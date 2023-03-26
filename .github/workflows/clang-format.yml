@@ -1,0 +1,25 @@
+name: clang-format
+
+on:
+  push:
+    branches: [ "staging" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  check:
+    name: Formatting Check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        path:
+          - 'src'
+          - 'test'
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run
+      uses: jidicula/clang-format-action@v4.11.0
+      with:
+        clang-format-version: '14'
+        check-path: ${{ matrix.path }}
+        fallback-style: 'Google'

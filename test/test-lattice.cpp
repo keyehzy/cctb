@@ -5,7 +5,6 @@
 #include "cctb/lattice.h"
 #include "cctb/vec.h"
 
-
 class LinearChainTest : public OneDimensionalLattice {
  public:
   LinearChainTest(int size) : OneDimensionalLattice(Vec<float>{1.0f * size}) {
@@ -132,8 +131,12 @@ TEST_CASE("GrapheneLattice", "[lattice]") {
   REQUIRE(hopping_matrix.rows == 2);
   REQUIRE(hopping_matrix.cols == 2);
   REQUIRE(hopping_matrix(0, 0) == std::complex<float>(0, 0));
-  REQUIRE(hopping_matrix(0, 1) == std::exp(comp * k.dot(d1)) + std::exp(comp * k.dot(d2)) + std::exp(comp * k.dot(d3)));
-  REQUIRE(hopping_matrix(1, 0) == std::exp(-comp * k.dot(d1)) + std::exp(-comp * k.dot(d2)) + std::exp(-comp * k.dot(d3)));
+  REQUIRE(hopping_matrix(0, 1) == std::exp(comp * k.dot(d1)) +
+                                      std::exp(comp * k.dot(d2)) +
+                                      std::exp(comp * k.dot(d3)));
+  REQUIRE(hopping_matrix(1, 0) == std::exp(-comp * k.dot(d1)) +
+                                      std::exp(-comp * k.dot(d2)) +
+                                      std::exp(-comp * k.dot(d3)));
   REQUIRE(hopping_matrix(1, 1) == std::complex<float>(0, 0));
 }
 

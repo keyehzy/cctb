@@ -86,11 +86,14 @@ class OneDimensionalLattice : public Lattice {
     Matrix<std::complex<float>> hamiltonian(Size(), Size());
     for (auto edge : Edges()) {
       Vec<float> from_position = SiteAt(edge.from_index).position;
-      Vec<float> to_position = SiteAt(edge.to_index).position + m_a1 * edge.relative_index[0];
+      Vec<float> to_position =
+          SiteAt(edge.to_index).position + m_a1 * edge.relative_index[0];
       float dot = k.dot(to_position - from_position);
       std::complex<float> phase = std::complex<float>(0, dot);
-      hamiltonian(edge.from_index, edge.to_index) += edge.weight * std::exp(phase);
-      hamiltonian(edge.to_index, edge.from_index) += edge.weight * std::exp(-phase);
+      hamiltonian(edge.from_index, edge.to_index) +=
+          edge.weight * std::exp(phase);
+      hamiltonian(edge.to_index, edge.from_index) +=
+          edge.weight * std::exp(-phase);
     }
     return hamiltonian;
   }
@@ -138,22 +141,25 @@ class TwoDimensionalLattice : public Lattice {
           lattice_file << to_position[0] << " " << to_position[1] << "\n\n";
         }
       }
-    }   
+    }
   }
 
   Matrix<std::complex<float>> HoppingMatrix(Vec<float> k) const override {
     Matrix<std::complex<float>> hamiltonian(Size(), Size());
     for (auto edge : Edges()) {
       Vec<float> from_position = SiteAt(edge.from_index).position;
-      Vec<float> to_position = SiteAt(edge.to_index).position + m_a1 * edge.relative_index[0] + m_a2 * edge.relative_index[1];
+      Vec<float> to_position = SiteAt(edge.to_index).position +
+                               m_a1 * edge.relative_index[0] +
+                               m_a2 * edge.relative_index[1];
       float dot = k.dot(to_position - from_position);
       std::complex<float> phase = std::complex<float>(0, dot);
-      hamiltonian(edge.from_index, edge.to_index) += edge.weight * std::exp(phase);
-      hamiltonian(edge.to_index, edge.from_index) += edge.weight * std::exp(-phase);
+      hamiltonian(edge.from_index, edge.to_index) +=
+          edge.weight * std::exp(phase);
+      hamiltonian(edge.to_index, edge.from_index) +=
+          edge.weight * std::exp(-phase);
     }
     return hamiltonian;
   }
-
 
  protected:
   Vec<float> m_a1;

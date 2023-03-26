@@ -1,12 +1,12 @@
 #pragma once
 
-#include <vector>
 #include <iostream>
+#include <vector>
 
 template <typename T>
 struct Vec {
   std::vector<T> data;
-  
+
   Vec(T x) : data({x}) {}
 
   Vec(T x, T y) : data({x, y}) {}

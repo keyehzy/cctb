@@ -2,6 +2,3 @@
 
 #include "cctb/matrix.h"
 #include "cctb/vec.h"
-
-
-
