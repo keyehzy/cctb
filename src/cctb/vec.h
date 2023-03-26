@@ -7,6 +7,8 @@ template <typename T>
 struct Vec {
   std::vector<T> data;
 
+  Vec(){};
+
   Vec(T x) : data({x}) {}
 
   Vec(T x, T y) : data({x, y}) {}
@@ -66,7 +68,7 @@ struct Vec {
   }
 
   void Print() const {
-    for (int i = 0; i < data.size(); i++) {
+    for (std::size_t i = 0; i < data.size(); i++) {
       std::cout << data[i] << " ";
     }
     std::cout << std::endl;

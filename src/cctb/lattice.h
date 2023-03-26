@@ -71,7 +71,18 @@ struct EdgeData {
 
 class TwoDimensionalLattice : public Lattice {
  public:
-  TwoDimensionalLattice(Vec<float> a1, Vec<float> a2) : m_a1(a1), m_a2(a2) {}
+  TwoDimensionalLattice(Vec<float> a1, Vec<float> a2) : m_a1(a1), m_a2(a2) {
+    // https://physics.stackexchange.com/questions/340860/reciprocal-lattice-in-2d
+    float det = a1[0] * a2[1] - a1[1] * a2[0];
+    float pref = 2 * M_PI / det;
+    m_b1 = Vec<float>(a2[1], -a2[0]) * pref;
+    m_b2 = Vec<float>(-a1[1], a1[0]) * pref;
+  }
+
+  Vec<float> a1() const { return m_a1; }
+  Vec<float> a2() const { return m_a2; }
+  Vec<float> b1() const { return m_b1; }
+  Vec<float> b2() const { return m_b2; }
 
   void Plot(PainterBackend, std::ostream &) const override;
 
@@ -80,4 +91,6 @@ class TwoDimensionalLattice : public Lattice {
  protected:
   Vec<float> m_a1;
   Vec<float> m_a2;
+  Vec<float> m_b1;
+  Vec<float> m_b2;
 };

@@ -5,6 +5,28 @@
 #include "cctb/lattice.h"
 #include "cctb/vec.h"
 
+struct ApproxEqualVec : Catch::Matchers::MatcherGenericBase {
+ public:
+  ApproxEqualVec(Vec<float> v) : v_(v) {}
+
+  bool match(Vec<float> const &v) const {
+    if (v.size() != v_.size()) {
+      return false;
+    }
+    for (std::size_t i = 0; i < v.size(); i++) {
+      if (std::abs(v[i] - v_[i]) > 1e-6) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  std::string describe() const override { return "ApproxEqualVec"; }
+
+ private:
+  Vec<float> v_;
+};
+
 class LinearChainTest : public OneDimensionalLattice {
  public:
   LinearChainTest(int size) : OneDimensionalLattice(Vec<float>{1.0f * size}) {
@@ -100,6 +122,15 @@ class GrapheneLatticeTest : public TwoDimensionalLattice {
 TEST_CASE("GrapheneLattice", "[lattice]") {
   GrapheneLatticeTest lattice;
   REQUIRE(lattice.Size() == 2);
+  REQUIRE(lattice.a1() == Vec<float>(1.5f, 0.5f * sqrtf(3.0f)));
+  REQUIRE(lattice.a2() == Vec<float>(1.5f, -0.5f * sqrtf(3.0f)));
+  REQUIRE_THAT(lattice.b1(),
+               ApproxEqualVec(
+                   Vec<float>(2.0f * M_PI / 3.0f, 2.0f * M_PI / sqrtf(3.0f))));
+  REQUIRE_THAT(lattice.b2(),
+               ApproxEqualVec(
+                   Vec<float>(2.0f * M_PI / 3.0f, -2.0f * M_PI / sqrtf(3.0f))));
+
   REQUIRE(lattice.SiteAt(0).position == Vec<float>{0, 0});
   REQUIRE(lattice.SiteAt(1).position == Vec<float>{0.5, 0.5f * sqrtf(3.0f)});
   REQUIRE(lattice.Edges().size() == 3);

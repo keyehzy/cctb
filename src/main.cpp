@@ -25,5 +25,7 @@ int main(void) {
   lattice.Plot(PainterBackend::kTikz, lattice_file);
   lattice.AdjMatrix().Print();
   lattice.HoppingMatrix(Vec<float>{0.5, 0.8}).Print();
+  lattice.b1().Print();
+  lattice.b2().Print();
   return 0;
 }
