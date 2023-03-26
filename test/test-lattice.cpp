@@ -3,6 +3,42 @@
 #include "cctb/lattice.h"
 #include "cctb/vec.h"
 
+class LinearChainTest : public OneDimensionalLattice {
+ public:
+  LinearChainTest(int size) : OneDimensionalLattice(Vec<float>{1.0f * size}) {
+    for (int i = 0; i < size; i++) {
+      AddSite(Site(Vec<float>{(float)i, 0}));
+    }
+    for (int i = 0; i < size - 1; i++) {
+      AddEdge(Edge({0}, i, i + 1));
+    }
+    // if periodic, add the last edge
+    AddEdge(Edge({1}, size - 1, 0));
+  }
+};
+
+TEST_CASE("LinearChain", "[lattice]") {
+  LinearChainTest lattice(2);
+  REQUIRE(lattice.Size() == 2);
+  REQUIRE(lattice.SiteAt(0).position == Vec<float>{0});
+  REQUIRE(lattice.SiteAt(1).position == Vec<float>{1});
+  REQUIRE(lattice.Edges().size() == 2);
+  REQUIRE(lattice.Edges()[0].relative_index == std::vector<int>{0});
+  REQUIRE(lattice.Edges()[1].relative_index == std::vector<int>{1});
+  REQUIRE(lattice.Edges()[0].from_index == 0);
+  REQUIRE(lattice.Edges()[0].to_index == 1);
+  REQUIRE(lattice.Edges()[1].from_index == 1);
+  REQUIRE(lattice.Edges()[1].to_index == 0);
+
+  Matrix<int> adj_matrix = lattice.AdjMatrix();
+  REQUIRE(adj_matrix.rows == 2);
+  REQUIRE(adj_matrix.cols == 2);
+  REQUIRE(adj_matrix(0, 0) == 0);
+  REQUIRE(adj_matrix(0, 1) == 1);
+  REQUIRE(adj_matrix(1, 0) == 1);
+  REQUIRE(adj_matrix(1, 1) == 0);
+}
+
 class SquareLatticeTest : public TwoDimensionalLattice {
  public:
   SquareLatticeTest()

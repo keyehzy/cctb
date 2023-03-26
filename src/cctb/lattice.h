@@ -58,14 +58,26 @@ class OneDimensionalLattice : public Lattice {
   OneDimensionalLattice(Vec<float> a1) : m_a1(a1) {}
 
   void Plot() const override {
+    std::ofstream lattice_file("lattice.dat");
+
+    lattice_file << "#m=0,S=16\n";
     for (const Site &site : Sites()) {
-      std::printf("%f %f\n", site.position[0], 0.0);
+      for (int i = -1; i <= 1; i++) {
+        Vec<float> offset = m_a1 * i;
+        Vec<float> p = site.position + offset;
+        lattice_file << p[0] << " " << 0.0f << "\n";
+      }
     }
 
-    for (auto edge : Edges()) {
-      float r = edge.relative_index[0] * m_a1[0];
-      std::printf("%f %f\n", SiteAt(edge.from_index).position[0] + r, 0.0);
-      std::printf("%f %f\n", SiteAt(edge.from_index).position[0] - r, 0.0);
+    lattice_file << "\n#m=1,S=1\n";
+    for (const Edge &edge : Edges()) {
+      for (int i = -1; i <= 1; i++) {
+        Vec<float> from_position = SiteAt(edge.from_index).position + m_a1 * i;
+        Vec<float> to_position = SiteAt(edge.to_index).position + m_a1 * i +
+                                 m_a1 * edge.relative_index[0];
+        lattice_file << from_position[0] << " " << 0.0f << "\n";
+        lattice_file << to_position[0] << " " << 0.0f << "\n\n";
+      }
     }
   }
 
@@ -98,8 +110,6 @@ class TwoDimensionalLattice : public Lattice {
   TwoDimensionalLattice(Vec<float> a1, Vec<float> a2) : m_a1(a1), m_a2(a2) {}
 
   void Plot() const override {
-    std::ofstream sites_file("sites.dat");
-    std::ofstream edges_file("edges.dat");
     std::ofstream lattice_file("lattice.dat");
 
     lattice_file << "#m=0,S=16\n";
@@ -126,7 +136,7 @@ class TwoDimensionalLattice : public Lattice {
           lattice_file << to_position[0] << " " << to_position[1] << "\n\n";
         }
       }
-    }
+    }   
   }
 
   Matrix<std::complex<float>> HoppingMatrix(float k) const override {
