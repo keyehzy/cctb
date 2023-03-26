@@ -5,6 +5,7 @@ target_link_libraries(cctb PRIVATE cctb-lib)
 add_library(
     cctb-lib
     cctb.cpp
+    lattice.cpp
 )
 target_include_directories(cctb-lib PUBLIC .)
 target_link_libraries(cctb-lib PRIVATE -lm)
