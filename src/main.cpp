@@ -23,9 +23,10 @@ int main(void) {
   GrapheneLattice lattice;
   std::ofstream lattice_file("lattice.tex");
   lattice.Plot(PainterBackend::kTikz, lattice_file);
-  lattice.AdjMatrix().Print();
-  lattice.HoppingMatrix(Vec<float>{0.5, 0.8}).Print();
-  lattice.b1().Print();
-  lattice.b2().Print();
+  // lattice.AdjMatrix().Print();
+  // lattice.HoppingMatrix(Vec<float>{0.5, 0.8}).Print();
+
+  std::ofstream bz_file("bz.tex");
+  lattice.PlotBrillouinZone(PainterBackend::kTikz, bz_file);
   return 0;
 }

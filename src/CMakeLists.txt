@@ -8,6 +8,7 @@ add_library(
     lattice.cpp
     Painter/Tikz.cpp
     Painter/Asymptote.cpp
+    Geometry/Line.cpp
 )
 target_include_directories(cctb-lib PUBLIC .)
 target_link_libraries(cctb-lib PRIVATE -lm)

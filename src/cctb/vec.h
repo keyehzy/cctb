@@ -47,6 +47,14 @@ struct Vec {
     return result;
   }
 
+  Vec operator/(T scalar) const {
+    Vec result(data);
+    for (std::size_t i = 0; i < data.size(); i++) {
+      result[i] /= scalar;
+    }
+    return result;
+  }
+
   bool operator==(const Vec& other) const {
     if (data.size() != other.data.size()) {
       return false;

@@ -86,6 +86,8 @@ class TwoDimensionalLattice : public Lattice {
 
   void Plot(PainterBackend, std::ostream &) const override;
 
+  void PlotBrillouinZone(PainterBackend, std::ostream &) const;
+
   Matrix<std::complex<float>> HoppingMatrix(Vec<float> k) const override;
 
  protected:
