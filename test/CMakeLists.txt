@@ -7,6 +7,7 @@ target_link_libraries(cctb-test
     Catch2::Catch2WithMain
     cctb-lib
 )
+enable_testing()
 add_test(
     NAME cctb-test
     COMMAND cctb-test
