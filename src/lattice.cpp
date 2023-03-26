@@ -99,7 +99,13 @@ void TwoDimensionalLattice::PlotBrillouinZone(PainterBackend backend,
   plotter->Prepare();
 
   // Draw Axes
-  plotter->SetAxis(-5, 5, -5, 5);
+  float max_x = std::max(m_b1[0], m_b2[0]);
+  float max_y = std::max(m_b1[1], m_b2[1]);
+  float max_both = std::max(max_x, max_y);
+  plotter->SetAxis(-1.2f * max_both, 1.2f * max_both, -1.2f * max_both,
+                   1.2f * max_both);
+  plotter->DrawText(1.2f * max_both, 0.25f, "$k_x$");
+  plotter->DrawText(0.25f, 1.2f * max_both, "$k_y$");
 
   // Calculate all perpendicular bisectors
   Line b1_line(Vec<float>(0, 0), m_b1);
@@ -123,9 +129,11 @@ void TwoDimensionalLattice::PlotBrillouinZone(PainterBackend backend,
   Vec<float> k5 = b1_perp_mirrored.intercect(b3_perp_mirrored);
   Vec<float> k6 = b2_perp_mirrored.intercect(b3_perp_mirrored);
 
+  // Get midpoints
   Vec<float> b1_mid = b1_line.midpoint();
   Vec<float> b2_mid = b2_line.midpoint();
 
+  // Draw lines
   plotter->DrawLine(b1_mid[0], b1_mid[1], k1[0], k1[1]);
   plotter->DrawLine(-b2_mid[0], -b2_mid[1], k1[0], k1[1]);
 
@@ -139,6 +147,7 @@ void TwoDimensionalLattice::PlotBrillouinZone(PainterBackend backend,
   plotter->DrawLine(k3[0], k3[1], k4[0], k4[1]);
   plotter->DrawLine(k5[0], k5[1], k6[0], k6[1]);
 
+  // Draw Brillouin Zone
   plotter->DrawArrow(0, 0, m_b1[0], m_b1[1]);
   plotter->DrawArrow(0, 0, m_b2[0], m_b2[1]);
   plotter->DrawDottedLine(m_b1[0], m_b1[1], m_b1[0] + m_b2[0],
@@ -146,6 +155,11 @@ void TwoDimensionalLattice::PlotBrillouinZone(PainterBackend backend,
   plotter->DrawDottedLine(m_b2[0], m_b2[1], m_b1[0] + m_b2[0],
                           m_b1[1] + m_b2[1]);
 
+  // Draw labels
+  plotter->DrawText(m_b1[0] + 0.35, m_b1[1] + 0.35, "$b_1$");
+  plotter->DrawText(m_b2[0] + 0.35, m_b2[1] - 0.35, "$b_2$");
+
+  plotter->DrawText(-.2, .2, "$\\Gamma$");
   plotter->Finish();
 }
 
