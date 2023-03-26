@@ -42,20 +42,33 @@ class GrapheneLattice : public TwoDimensionalLattice {
 
 int main(void) {
   GrapheneLattice lattice;
-  lattice.PlotSites();
+  std::ofstream lattice_file("lattice.tex");
+  lattice.Plot(PainterBackend::kTikz, lattice_file);
+  lattice.AdjMatrix().Print();
+  lattice.HoppingMatrix({0.5, 0.8}).Print();
   return 0;
 }
 ```
 
-The PlotSites() function will generate a file called `lattice.dat` in the current directory. You can use GNU plotutils `graph` to graph the lattice.
+There are two graphing backends: `Tikz` and `Asymptote`. The each backend will generate a file that can be compiled to a PDF or any other format supported by the backend using `pdflatex` or `asy`, respectively. In the example above, we use the `Tikz` backend to generate a file called `lattice.tex`. We can then compile it to a PDF using `latexmk`:
 
 ```bash
-graph -T png -B lattice.dat > lattice.png
+latexmk -pdf lattice.tex
 ```
 
 which will generate the following image:
 
-![Graphene lattice](examples/graphene.png)
+![Graphene lattice](examples/graphene.pdf)
+
+
+Additionally, in the code above, we also print the adjacency matrix and the hopping matrix for the lattice at a given k-point:
+
+```bash
+0 1 
+1 0 
+(0,0) (2.36864,-0.0986967) 
+(2.36864,0.0986967) (0,0) 
+```
 
 ## License:
 

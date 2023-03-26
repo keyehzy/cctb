@@ -6,6 +6,8 @@ add_library(
     cctb-lib
     cctb.cpp
     lattice.cpp
+    Painter/Tikz.cpp
+    Painter/Asymptote.cpp
 )
 target_include_directories(cctb-lib PUBLIC .)
 target_link_libraries(cctb-lib PRIVATE -lm)

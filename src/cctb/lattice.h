@@ -4,8 +4,10 @@
 #include <complex>
 #include <fstream>
 #include <iostream>
+#include <ostream>
 #include <vector>
 
+#include "Painter/Painter.h"
 #include "cctb/matrix.h"
 #include "cctb/vec.h"
 
@@ -36,7 +38,7 @@ class Lattice {
   std::vector<Edge> Edges() const { return m_edges; }
   int Size() const { return m_sites.size(); }
 
-  virtual void Plot() const = 0;
+  virtual void Plot(PainterBackend, std::ostream &) const = 0;
 
   Matrix<int> AdjMatrix() const;
 
@@ -51,7 +53,7 @@ class OneDimensionalLattice : public Lattice {
  public:
   OneDimensionalLattice(Vec<float> a1) : m_a1(a1) {}
 
-  void Plot() const override;
+  void Plot(PainterBackend, std::ostream &) const override;
 
   Matrix<std::complex<float>> HoppingMatrix(Vec<float> k) const override;
 
@@ -71,7 +73,7 @@ class TwoDimensionalLattice : public Lattice {
  public:
   TwoDimensionalLattice(Vec<float> a1, Vec<float> a2) : m_a1(a1), m_a2(a2) {}
 
-  void Plot() const override;
+  void Plot(PainterBackend, std::ostream &) const override;
 
   Matrix<std::complex<float>> HoppingMatrix(Vec<float> k) const override;
 

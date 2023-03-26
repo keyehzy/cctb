@@ -1,4 +1,5 @@
 #include <cmath>
+#include <fstream>
 #include <utility>
 
 #include "cctb/lattice.h"
@@ -20,8 +21,9 @@ class GrapheneLattice : public TwoDimensionalLattice {
 
 int main(void) {
   GrapheneLattice lattice;
-  lattice.Plot();
+  std::ofstream lattice_file("lattice.tex");
+  lattice.Plot(PainterBackend::kTikz, lattice_file);
   lattice.AdjMatrix().Print();
-  lattice.HoppingMatrix(0.5).Print();
+  lattice.HoppingMatrix(Vec<float>{0.5, 0.8}).Print();
   return 0;
 }
