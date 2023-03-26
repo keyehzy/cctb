@@ -61,7 +61,7 @@ latexmk -pdf lattice.tex
 
 which will generate the following image:
 
-![Graphene lattice](examples/graphene.pdf)
+![Graphene lattice](examples/graphene.png)
 
 
 Additionally, in the code above, we also print the adjacency matrix and the hopping matrix for the lattice at a given k-point:
