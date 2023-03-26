@@ -57,6 +57,14 @@ struct Vec {
     return true;
   }
 
+  float dot(const Vec& other) const {
+    float result = 0.0f;
+    for (std::size_t i = 0; i < data.size(); i++) {
+      result += data[i] * other.data[i];
+    }
+    return result;
+  }
+
   void Print() const {
     for (int i = 0; i < data.size(); i++) {
       std::cout << data[i] << " ";

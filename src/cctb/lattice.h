@@ -18,8 +18,9 @@ struct Edge {
   std::vector<int> relative_index;
   int from_index;
   int to_index;
-  Edge(std::vector<int> idx, int from, int to)
-      : relative_index(idx), from_index(from), to_index(to) {}
+  float weight;
+  Edge(std::vector<int> idx, int from, int to, float w = 1.0f)
+      : relative_index(idx), from_index(from), to_index(to), weight(w) {}
 };
 
 class Lattice {
@@ -46,7 +47,7 @@ class Lattice {
     return hamiltonian;
   }
 
-  virtual Matrix<std::complex<float>> HoppingMatrix(float k) const = 0;
+  virtual Matrix<std::complex<float>> HoppingMatrix(Vec<float> k) const = 0;
 
  protected:
   std::vector<Site> m_sites;
@@ -81,14 +82,15 @@ class OneDimensionalLattice : public Lattice {
     }
   }
 
-  Matrix<std::complex<float>> HoppingMatrix(float k) const override {
+  Matrix<std::complex<float>> HoppingMatrix(Vec<float> k) const override {
     Matrix<std::complex<float>> hamiltonian(Size(), Size());
     for (auto edge : Edges()) {
-      float r = edge.relative_index[0] * m_a1[0];
-      float dot = k * r;
-      std::complex<float> phase = std::exp(std::complex<float>(0, dot));
-      hamiltonian(edge.from_index, edge.to_index) = phase;
-      hamiltonian(edge.to_index, edge.from_index) = std::conj(phase);
+      Vec<float> from_position = SiteAt(edge.from_index).position;
+      Vec<float> to_position = SiteAt(edge.to_index).position + m_a1 * edge.relative_index[0];
+      float dot = k.dot(to_position - from_position);
+      std::complex<float> phase = std::complex<float>(0, dot);
+      hamiltonian(edge.from_index, edge.to_index) += edge.weight * std::exp(phase);
+      hamiltonian(edge.to_index, edge.from_index) += edge.weight * std::exp(-phase);
     }
     return hamiltonian;
   }
@@ -139,20 +141,19 @@ class TwoDimensionalLattice : public Lattice {
     }   
   }
 
-  Matrix<std::complex<float>> HoppingMatrix(float k) const override {
+  Matrix<std::complex<float>> HoppingMatrix(Vec<float> k) const override {
     Matrix<std::complex<float>> hamiltonian(Size(), Size());
     for (auto edge : Edges()) {
-      float r1 = SiteAt(edge.from_index).position[0] +
-                 edge.relative_index[0] * m_a1[0];
-      float r2 =
-          SiteAt(edge.to_index).position[0] + edge.relative_index[1] * m_a2[1];
-      float dot = k * (r1 + r2);
-      std::complex<float> phase = std::exp(std::complex<float>(0, dot));
-      hamiltonian(edge.from_index, edge.to_index) = phase;
-      hamiltonian(edge.to_index, edge.from_index) = std::conj(phase);
+      Vec<float> from_position = SiteAt(edge.from_index).position;
+      Vec<float> to_position = SiteAt(edge.to_index).position + m_a1 * edge.relative_index[0] + m_a2 * edge.relative_index[1];
+      float dot = k.dot(to_position - from_position);
+      std::complex<float> phase = std::complex<float>(0, dot);
+      hamiltonian(edge.from_index, edge.to_index) += edge.weight * std::exp(phase);
+      hamiltonian(edge.to_index, edge.from_index) += edge.weight * std::exp(-phase);
     }
     return hamiltonian;
   }
+
 
  protected:
   Vec<float> m_a1;

@@ -1,13 +1,16 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_templated.hpp>
+#include <complex>
 
 #include "cctb/lattice.h"
 #include "cctb/vec.h"
+
 
 class LinearChainTest : public OneDimensionalLattice {
  public:
   LinearChainTest(int size) : OneDimensionalLattice(Vec<float>{1.0f * size}) {
     for (int i = 0; i < size; i++) {
-      AddSite(Site(Vec<float>{(float)i, 0}));
+      AddSite(Site(Vec<float>{static_cast<float>(i)}));
     }
     for (int i = 0; i < size - 1; i++) {
       AddEdge(Edge({0}, i, i + 1));
@@ -37,6 +40,14 @@ TEST_CASE("LinearChain", "[lattice]") {
   REQUIRE(adj_matrix(0, 1) == 1);
   REQUIRE(adj_matrix(1, 0) == 1);
   REQUIRE(adj_matrix(1, 1) == 0);
+
+  Matrix<std::complex<float>> hopping_matrix = lattice.HoppingMatrix(0.5);
+  REQUIRE(hopping_matrix.rows == 2);
+  REQUIRE(hopping_matrix.cols == 2);
+  REQUIRE(hopping_matrix(0, 0) == std::complex<float>(0, 0));
+  REQUIRE(hopping_matrix(0, 1) == std::complex<float>(2.0f * cosf(0.5), 0));
+  REQUIRE(hopping_matrix(1, 0) == std::complex<float>(2.0f * cosf(0.5), 0));
+  REQUIRE(hopping_matrix(1, 1) == std::complex<float>(0, 0));
 }
 
 class SquareLatticeTest : public TwoDimensionalLattice {
@@ -65,6 +76,13 @@ TEST_CASE("SquareLattice", "[lattice]") {
   REQUIRE(adj_matrix.rows == 1);
   REQUIRE(adj_matrix.cols == 1);
   REQUIRE(adj_matrix(0, 0) == 1);
+
+  Matrix<std::complex<float>> hopping_matrix =
+      lattice.HoppingMatrix(Vec<float>{0.5, 0.8});
+  REQUIRE(hopping_matrix.rows == 1);
+  REQUIRE(hopping_matrix.cols == 1);
+  REQUIRE(hopping_matrix(0, 0) ==
+          std::complex<float>(2.0f * cosf(0.5) + 2.0f * cosf(0.8), 0));
 }
 
 class GrapheneLatticeTest : public TwoDimensionalLattice {
@@ -103,15 +121,30 @@ TEST_CASE("GrapheneLattice", "[lattice]") {
   REQUIRE(adj_matrix(0, 1) == 1);
   REQUIRE(adj_matrix(1, 0) == 1);
   REQUIRE(adj_matrix(1, 1) == 0);
+
+  Vec<float> d1{0.5f, 0.5f * sqrtf(3.0)};
+  Vec<float> d2{0.5f, -0.5f * sqrtf(3.0)};
+  Vec<float> d3{-1.0f, 0.0f};
+  Vec<float> k{0.5, 0.8};
+  std::complex<float> comp = std::complex<float>(0.0f, 1.0f);
+
+  Matrix<std::complex<float>> hopping_matrix = lattice.HoppingMatrix(k);
+  REQUIRE(hopping_matrix.rows == 2);
+  REQUIRE(hopping_matrix.cols == 2);
+  REQUIRE(hopping_matrix(0, 0) == std::complex<float>(0, 0));
+  REQUIRE(hopping_matrix(0, 1) == std::exp(comp * k.dot(d1)) + std::exp(comp * k.dot(d2)) + std::exp(comp * k.dot(d3)));
+  REQUIRE(hopping_matrix(1, 0) == std::exp(-comp * k.dot(d1)) + std::exp(-comp * k.dot(d2)) + std::exp(-comp * k.dot(d3)));
+  REQUIRE(hopping_matrix(1, 1) == std::complex<float>(0, 0));
 }
 
 class GrapheneLatticeExtendedTest : public TwoDimensionalLattice {
  public:
-  GrapheneLatticeExtendedTest() : TwoDimensionalLattice(Vec<float>(3.0f, 0), Vec<float>(0, sqrtf(3.0f))) {
+  GrapheneLatticeExtendedTest()
+      : TwoDimensionalLattice(Vec<float>(3.0f, 0), Vec<float>(0, sqrtf(3.0f))) {
     AddSite(Site(Vec<float>{0, 0}));
     AddSite(Site(Vec<float>{0.5f, 0.5f * sqrtf(3.0f)}));
     AddSite(Site(Vec<float>{1.5f, 0.5f * sqrtf(3.0f)}));
-    AddSite(Site(Vec<float>{2.0f, 0}));    
+    AddSite(Site(Vec<float>{2.0f, 0}));
     AddEdge(Edge({0, 0}, 0, 1));
     AddEdge(Edge({0, 0}, 1, 2));
     AddEdge(Edge({0, 0}, 2, 3));
@@ -119,7 +152,6 @@ class GrapheneLatticeExtendedTest : public TwoDimensionalLattice {
     AddEdge(Edge({1, 0}, 3, 0));
     AddEdge(Edge({0, 1}, 1, 0));
     AddEdge(Edge({0, 1}, 2, 3));
-
   };
 };
 
@@ -173,7 +205,9 @@ TEST_CASE("GrapheneLatticeExtended", "[lattice]") {
 
 class TriangularLatticeTest : public TwoDimensionalLattice {
  public:
-  TriangularLatticeTest(float a = 1.0f) : TwoDimensionalLattice(Vec<float>(a, 0), Vec<float>(0.5f * a, 0.5f * a * sqrtf(3.0f))) {
+  TriangularLatticeTest(float a = 1.0f)
+      : TwoDimensionalLattice(Vec<float>(a, 0),
+                              Vec<float>(0.5f * a, 0.5f * a * sqrtf(3.0f))) {
     AddSite(Site(Vec<float>{0, 0}));
     AddEdge(Edge({1, 0}, 0, 0));
     AddEdge(Edge({0, 1}, 0, 0));
@@ -204,7 +238,8 @@ TEST_CASE("TriangularLattice", "[lattice]") {
 
 class KagomeLatticeTest : public TwoDimensionalLattice {
  public:
-  KagomeLatticeTest() : TwoDimensionalLattice(Vec<float>(2, 0), Vec<float>(1.0f, sqrtf(3.0f))) {
+  KagomeLatticeTest()
+      : TwoDimensionalLattice(Vec<float>(2, 0), Vec<float>(1.0f, sqrtf(3.0f))) {
     AddSite(Site(Vec<float>{0, 0}));
     AddSite(Site(Vec<float>{1.0f, 0}));
     AddSite(Site(Vec<float>{0.5f, 0.5f * sqrtf(3.0f)}));
