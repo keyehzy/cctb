@@ -160,6 +160,8 @@ void TwoDimensionalLattice::PlotBrillouinZone(PainterBackend backend,
   plotter->DrawText(m_b2[0] + 0.35, m_b2[1] - 0.35, "$b_2$");
 
   plotter->DrawText(-.2, .2, "$\\Gamma$");
+
+  plotter->DrawPoint(k3[0], k3[1]);
   plotter->Finish();
 }
 
