@@ -79,15 +79,13 @@ class TikzDraw : public TikzNode {
 
 class TikzFilledDraw : public TikzNode {
  public:
-  TikzFilledDraw(const TikzNode& node, const TikzNode& obj,
-                 const std::vector<std::string>& options)
+  TikzFilledDraw(const TikzNode& node, const TikzNode& obj, const std::vector<std::string>& options)
       : node_(node), obj_(obj), options_(options) {}
   virtual ~TikzFilledDraw() = default;
 
   virtual std::string ToString() const override {
     std::string options = get_options(options_);
-    return "\\fill" + options + " " + node_.ToString() + obj_.ToString() +
-           ";\n";
+    return "\\fill" + options + " " + node_.ToString() + obj_.ToString() + ";\n";
   }
 
  private:
@@ -98,8 +96,7 @@ class TikzFilledDraw : public TikzNode {
 
 class TikzLine : public TikzNode {
  public:
-  TikzLine(const std::vector<TikzPoint>& points,
-           const std::vector<std::string>& options)
+  TikzLine(const std::vector<TikzPoint>& points, const std::vector<std::string>& options)
       : children_(points), options_(options) {}
   virtual ~TikzLine() = default;
 
@@ -117,8 +114,7 @@ class TikzLine : public TikzNode {
 
 class TikzText : public TikzNode {
  public:
-  TikzText(const TikzNode& node, const std::string& text,
-           std::vector<std::string> options)
+  TikzText(const TikzNode& node, const std::string& text, std::vector<std::string> options)
       : node_(node), text_(text), options_(options) {}
   virtual ~TikzText() = default;
 
@@ -133,8 +129,7 @@ class TikzText : public TikzNode {
       options += "]";
     }
 
-    return "\\node at " + node_.ToString() + " " + options + " {" + text_ +
-           "};\n";
+    return "\\node at " + node_.ToString() + " " + options + " {" + text_ + "};\n";
   }
 
  private:
@@ -162,8 +157,7 @@ void TikzPainter::Prepare() const {
   out_ << "\\begin{tikzpicture}\n";
 }
 
-void TikzPainter::SetAxis(float xmin, float xmax, float ymin,
-                          float ymax) const {
+void TikzPainter::SetAxis(float xmin, float xmax, float ymin, float ymax) const {
   out_ << TikzLine({TikzPoint(xmin, 0), TikzPoint(xmax, 0)}, {});
   out_ << TikzLine({TikzPoint(0, ymin), TikzPoint(0, ymax)}, {});
 }

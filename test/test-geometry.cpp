@@ -43,8 +43,7 @@ TEST_CASE("Line::perpendicular_bisector", "[Line]") {
   }
 
   {
-    Line line(Vec<float>{0, 0},
-              Vec<float>{2.0f / 3.0f, 2.0f / std::sqrt(3.0f)});
+    Line line(Vec<float>{0, 0}, Vec<float>{2.0f / 3.0f, 2.0f / std::sqrt(3.0f)});
     Line bisector = line.perpendicular_bisector();
     REQUIRE(bisector.p1() == line.midpoint());
     REQUIRE(line.orthogonal(bisector));
@@ -58,8 +57,7 @@ TEST_CASE("Line::midpoint", "[Line]") {
   }
 
   {
-    Line line(Vec<float>{0, 0},
-              Vec<float>{2.0f / 3.0f, 2.0f / std::sqrt(3.0f)});
+    Line line(Vec<float>{0, 0}, Vec<float>{2.0f / 3.0f, 2.0f / std::sqrt(3.0f)});
     REQUIRE(line.midpoint() == Vec<float>{1.0f / 3.0f, 1.0f / std::sqrt(3.0f)});
   }
 }

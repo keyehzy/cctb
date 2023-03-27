@@ -10,8 +10,7 @@ class Painter {
   virtual ~Painter() {}
 
   virtual void Prepare() const = 0;
-  virtual void SetAxis(float xmin, float xmax, float ymin,
-                       float ymax) const = 0;
+  virtual void SetAxis(float xmin, float xmax, float ymin, float ymax) const = 0;
   virtual void DrawLine(float x1, float y1, float x2, float y2) const = 0;
   virtual void DrawDottedLine(float x1, float y1, float x2, float y2) const = 0;
   virtual void DrawArrow(float x1, float y1, float x2, float y2) const = 0;
@@ -34,15 +33,12 @@ class TikzPainter : public Painter {
   virtual ~TikzPainter() {}
 
   virtual void Prepare() const override;
-  virtual void SetAxis(float xmin, float xmax, float ymin,
-                       float ymax) const override;
+  virtual void SetAxis(float xmin, float xmax, float ymin, float ymax) const override;
   virtual void DrawLine(float x1, float y1, float x2, float y2) const override;
-  virtual void DrawDottedLine(float x1, float y1, float x2,
-                              float y2) const override;
+  virtual void DrawDottedLine(float x1, float y1, float x2, float y2) const override;
   virtual void DrawArrow(float x1, float y1, float x2, float y2) const override;
   virtual void DrawPoint(float x, float y) const override;
-  virtual void DrawText(float x, float y,
-                        const std::string& text) const override;
+  virtual void DrawText(float x, float y, const std::string& text) const override;
   virtual void Finish() const override;
 };
 
@@ -52,22 +48,18 @@ class AsymptotePainter : public Painter {
   virtual ~AsymptotePainter() {}
 
   virtual void Prepare() const override;
-  virtual void SetAxis(float xmin, float xmax, float ymin,
-                       float ymax) const override;
+  virtual void SetAxis(float xmin, float xmax, float ymin, float ymax) const override;
   virtual void DrawLine(float x1, float y1, float x2, float y2) const override;
-  virtual void DrawDottedLine(float x1, float y1, float x2,
-                              float y2) const override;
+  virtual void DrawDottedLine(float x1, float y1, float x2, float y2) const override;
   virtual void DrawArrow(float x1, float y1, float x2, float y2) const override;
   virtual void DrawPoint(float x, float y) const override;
-  virtual void DrawText(float x, float y,
-                        const std::string& text) const override;
+  virtual void DrawText(float x, float y, const std::string& text) const override;
   virtual void Finish() const override;
 };
 
 class PainterFactory {
  public:
-  static std::unique_ptr<Painter> create(PainterBackend backend,
-                                         std::ostream& out) {
+  static std::unique_ptr<Painter> create(PainterBackend backend, std::ostream& out) {
     switch (backend) {
       case PainterBackend::kTikz:
         return std::make_unique<TikzPainter>(out);

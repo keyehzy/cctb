@@ -13,8 +13,7 @@ Matrix<int> Lattice::AdjMatrix() const {
   return hamiltonian;
 }
 
-void OneDimensionalLattice::Plot(PainterBackend backend,
-                                 std::ostream &out) const {
+void OneDimensionalLattice::Plot(PainterBackend backend, std::ostream &out) const {
   auto plotter = PainterFactory::create(backend, out);
 
   plotter->Prepare();
@@ -30,8 +29,8 @@ void OneDimensionalLattice::Plot(PainterBackend backend,
   for (const Edge &edge : Edges()) {
     for (int i = -1; i <= 1; i++) {
       Vec<float> from_position = SiteAt(edge.from_index).position + m_a1 * i;
-      Vec<float> to_position = SiteAt(edge.to_index).position + m_a1 * i +
-                               m_a1 * edge.relative_index[0];
+      Vec<float> to_position =
+          SiteAt(edge.to_index).position + m_a1 * i + m_a1 * edge.relative_index[0];
       plotter->DrawLine(from_position[0], 0.0f, to_position[0], 0.0f);
     }
   }
@@ -39,25 +38,20 @@ void OneDimensionalLattice::Plot(PainterBackend backend,
   plotter->Finish();
 }
 
-Matrix<std::complex<float>> OneDimensionalLattice::HoppingMatrix(
-    Vec<float> k) const {
+Matrix<std::complex<float>> OneDimensionalLattice::HoppingMatrix(Vec<float> k) const {
   Matrix<std::complex<float>> hamiltonian(Size(), Size());
   for (auto edge : Edges()) {
     Vec<float> from_position = SiteAt(edge.from_index).position;
-    Vec<float> to_position =
-        SiteAt(edge.to_index).position + m_a1 * edge.relative_index[0];
+    Vec<float> to_position = SiteAt(edge.to_index).position + m_a1 * edge.relative_index[0];
     float dot = k.dot(to_position - from_position);
     std::complex<float> phase = std::complex<float>(0, dot);
-    hamiltonian(edge.from_index, edge.to_index) +=
-        edge.weight * std::exp(phase);
-    hamiltonian(edge.to_index, edge.from_index) +=
-        edge.weight * std::exp(-phase);
+    hamiltonian(edge.from_index, edge.to_index) += edge.weight * std::exp(phase);
+    hamiltonian(edge.to_index, edge.from_index) += edge.weight * std::exp(-phase);
   }
   return hamiltonian;
 }
 
-void TwoDimensionalLattice::Plot(PainterBackend backend,
-                                 std::ostream &out) const {
+void TwoDimensionalLattice::Plot(PainterBackend backend, std::ostream &out) const {
   auto plotter = PainterFactory::create(backend, out);
   plotter->Prepare();
 
@@ -74,13 +68,10 @@ void TwoDimensionalLattice::Plot(PainterBackend backend,
   for (const Edge &edge : Edges()) {
     for (int i = -1; i <= 1; i++) {
       for (int j = -1; j <= 1; j++) {
-        Vec<float> from_position =
-            SiteAt(edge.from_index).position + m_a1 * i + m_a2 * j;
-        Vec<float> to_position =
-            SiteAt(edge.to_index).position + (m_a1 * i + m_a2 * j) +
-            (m_a1 * edge.relative_index[0] + m_a2 * edge.relative_index[1]);
-        plotter->DrawLine(from_position[0], from_position[1], to_position[0],
-                          to_position[1]);
+        Vec<float> from_position = SiteAt(edge.from_index).position + m_a1 * i + m_a2 * j;
+        Vec<float> to_position = SiteAt(edge.to_index).position + (m_a1 * i + m_a2 * j) +
+                                 (m_a1 * edge.relative_index[0] + m_a2 * edge.relative_index[1]);
+        plotter->DrawLine(from_position[0], from_position[1], to_position[0], to_position[1]);
       }
     }
   }
@@ -93,8 +84,7 @@ void TwoDimensionalLattice::Plot(PainterBackend backend,
   plotter->Finish();
 }
 
-void TwoDimensionalLattice::PlotBrillouinZone(PainterBackend backend,
-                                              std::ostream &out) const {
+void TwoDimensionalLattice::PlotBrillouinZone(PainterBackend backend, std::ostream &out) const {
   auto plotter = PainterFactory::create(backend, out);
   plotter->Prepare();
 
@@ -102,8 +92,7 @@ void TwoDimensionalLattice::PlotBrillouinZone(PainterBackend backend,
   float max_x = std::max(m_b1[0], m_b2[0]);
   float max_y = std::max(m_b1[1], m_b2[1]);
   float max_both = std::max(max_x, max_y);
-  plotter->SetAxis(-1.2f * max_both, 1.2f * max_both, -1.2f * max_both,
-                   1.2f * max_both);
+  plotter->SetAxis(-1.2f * max_both, 1.2f * max_both, -1.2f * max_both, 1.2f * max_both);
   plotter->DrawText(1.2f * max_both, 0.25f, "$k_x$");
   plotter->DrawText(0.25f, 1.2f * max_both, "$k_y$");
 
@@ -150,10 +139,8 @@ void TwoDimensionalLattice::PlotBrillouinZone(PainterBackend backend,
   // Draw Brillouin Zone
   plotter->DrawArrow(0, 0, m_b1[0], m_b1[1]);
   plotter->DrawArrow(0, 0, m_b2[0], m_b2[1]);
-  plotter->DrawDottedLine(m_b1[0], m_b1[1], m_b1[0] + m_b2[0],
-                          m_b1[1] + m_b2[1]);
-  plotter->DrawDottedLine(m_b2[0], m_b2[1], m_b1[0] + m_b2[0],
-                          m_b1[1] + m_b2[1]);
+  plotter->DrawDottedLine(m_b1[0], m_b1[1], m_b1[0] + m_b2[0], m_b1[1] + m_b2[1]);
+  plotter->DrawDottedLine(m_b2[0], m_b2[1], m_b1[0] + m_b2[0], m_b1[1] + m_b2[1]);
 
   // Draw labels
   plotter->DrawText(m_b1[0] + 0.35, m_b1[1] + 0.35, "$b_1$");
@@ -165,20 +152,16 @@ void TwoDimensionalLattice::PlotBrillouinZone(PainterBackend backend,
   plotter->Finish();
 }
 
-Matrix<std::complex<float>> TwoDimensionalLattice::HoppingMatrix(
-    Vec<float> k) const {
+Matrix<std::complex<float>> TwoDimensionalLattice::HoppingMatrix(Vec<float> k) const {
   Matrix<std::complex<float>> hamiltonian(Size(), Size());
   for (auto edge : Edges()) {
     Vec<float> from_position = SiteAt(edge.from_index).position;
-    Vec<float> to_position = SiteAt(edge.to_index).position +
-                             m_a1 * edge.relative_index[0] +
+    Vec<float> to_position = SiteAt(edge.to_index).position + m_a1 * edge.relative_index[0] +
                              m_a2 * edge.relative_index[1];
     float dot = k.dot(to_position - from_position);
     std::complex<float> phase = std::complex<float>(0, dot);
-    hamiltonian(edge.from_index, edge.to_index) +=
-        edge.weight * std::exp(phase);
-    hamiltonian(edge.to_index, edge.from_index) +=
-        edge.weight * std::exp(-phase);
+    hamiltonian(edge.from_index, edge.to_index) += edge.weight * std::exp(phase);
+    hamiltonian(edge.to_index, edge.from_index) += edge.weight * std::exp(-phase);
   }
   return hamiltonian;
 }

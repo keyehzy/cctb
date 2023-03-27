@@ -9,12 +9,10 @@ Vec<float> Line::intercect(const Line& other) const {
   float y3 = other.p1()[1];
   float x4 = other.p2()[0];
   float y4 = other.p2()[1];
-  float x =
-      ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) /
-      ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4));
-  float y =
-      ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) /
-      ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4));
+  float x = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) /
+            ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4));
+  float y = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) /
+            ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4));
   return Vec<float>{x, y};
 }
 
@@ -45,6 +43,6 @@ Vec<float> Line::midpoint() const {
 }
 
 void Line::Print() const {
-  std::cout << "Line: (" << p1_[0] << ", " << p1_[1] << ") -> (" << p2_[0]
-            << ", " << p2_[1] << ")" << std::endl;
+  std::cout << "Line: (" << p1_[0] << ", " << p1_[1] << ") -> (" << p2_[0] << ", " << p2_[1] << ")"
+            << std::endl;
 }
