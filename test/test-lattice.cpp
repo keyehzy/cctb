@@ -5,11 +5,12 @@
 #include "cctb/lattice.h"
 #include "cctb/vec.h"
 
+template <std::size_t D>
 struct ApproxEqualVec : Catch::Matchers::MatcherGenericBase {
  public:
-  ApproxEqualVec(Vec<double> v) : v_(v) {}
+  ApproxEqualVec(NewVec<D> v) : v_(v) {}
 
-  bool match(Vec<double> const &v) const {
+  bool match(NewVec<D> const &v) const {
     if (v.size() != v_.size()) {
       return false;
     }
@@ -24,14 +25,14 @@ struct ApproxEqualVec : Catch::Matchers::MatcherGenericBase {
   std::string describe() const override { return "ApproxEqualVec"; }
 
  private:
-  Vec<double> v_;
+  NewVec<D> v_;
 };
 
 class LinearChainTest : public OneDimensionalLattice {
  public:
-  LinearChainTest(int size) : OneDimensionalLattice(Vec<double>{1.0 * size}) {
+  LinearChainTest(int size) : OneDimensionalLattice(NewVec<1>(1.0 * size)) {
     for (int i = 0; i < size; i++) {
-      AddSite(Site(Vec<double>{static_cast<double>(i)}));
+      AddSite(NewVec<1>(i));
     }
     for (int i = 0; i < size - 1; i++) {
       AddEdge(Edge({0}, i, i + 1));
@@ -44,8 +45,8 @@ class LinearChainTest : public OneDimensionalLattice {
 TEST_CASE("LinearChain", "[lattice]") {
   LinearChainTest lattice(2);
   REQUIRE(lattice.Size() == 2);
-  REQUIRE(lattice.SiteAt(0).position == Vec<double>{0});
-  REQUIRE(lattice.SiteAt(1).position == Vec<double>{1});
+  REQUIRE(lattice.SiteAt(0) == NewVec<1>(0));
+  REQUIRE(lattice.SiteAt(1) == NewVec<1>(1));
   REQUIRE(lattice.Edges().size() == 2);
   REQUIRE(lattice.Edges()[0].relative_index == std::vector<int>{0});
   REQUIRE(lattice.Edges()[1].relative_index == std::vector<int>{1});
