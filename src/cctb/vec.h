@@ -17,7 +17,7 @@ struct Vec {
 
   Vec(const std::vector<T>& data) : data(data) {}
 
-  std::size_t size() const { return data.size(); }
+  int size() const { return data.size(); }
 
   T& operator[](int i) { return data[i]; }
 
@@ -25,7 +25,7 @@ struct Vec {
 
   Vec operator+(const Vec& other) const {
     Vec result(data);
-    for (std::size_t i = 0; i < data.size(); i++) {
+    for (int i = 0; i < data.size(); i++) {
       result[i] += other[i];
     }
     return result;
@@ -33,7 +33,7 @@ struct Vec {
 
   Vec operator-(const Vec& other) const {
     Vec result(data);
-    for (std::size_t i = 0; i < data.size(); i++) {
+    for (int i = 0; i < data.size(); i++) {
       result[i] -= other[i];
     }
     return result;
@@ -41,7 +41,7 @@ struct Vec {
 
   Vec operator*(T scalar) const {
     Vec result(data);
-    for (std::size_t i = 0; i < data.size(); i++) {
+    for (int i = 0; i < data.size(); i++) {
       result[i] *= scalar;
     }
     return result;
@@ -49,7 +49,7 @@ struct Vec {
 
   Vec operator/(T scalar) const {
     Vec result(data);
-    for (std::size_t i = 0; i < data.size(); i++) {
+    for (int i = 0; i < data.size(); i++) {
       result[i] /= scalar;
     }
     return result;
@@ -59,7 +59,7 @@ struct Vec {
     if (data.size() != other.data.size()) {
       return false;
     }
-    for (std::size_t i = 0; i < data.size(); i++) {
+    for (int i = 0; i < data.size(); i++) {
       if (data[i] != other.data[i]) {
         return false;
       }
@@ -67,16 +67,16 @@ struct Vec {
     return true;
   }
 
-  float dot(const Vec& other) const {
-    float result = 0.0f;
-    for (std::size_t i = 0; i < data.size(); i++) {
+  double dot(const Vec& other) const {
+    double result = 0.0f;
+    for (int i = 0; i < data.size(); i++) {
       result += data[i] * other.data[i];
     }
     return result;
   }
 
   void Print() const {
-    for (std::size_t i = 0; i < data.size(); i++) {
+    for (int i = 0; i < data.size(); i++) {
       std::cout << data[i] << " ";
     }
     std::cout << std::endl;

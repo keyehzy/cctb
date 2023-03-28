@@ -1,7 +1,10 @@
 #pragma once
 
+#include <cstdint>
 #include <iostream>
 #include <vector>
+
+typedef uint64_t u64;
 
 template <typename T>
 struct Matrix {

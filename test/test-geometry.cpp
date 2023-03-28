@@ -6,44 +6,44 @@
 
 TEST_CASE("Line::intercect", "[Line]") {
   {
-    Line line1(Vec<float>{0, 0}, Vec<float>{1, 1});
-    Line line2(Vec<float>{0, 1}, Vec<float>{1, 0});
-    Vec<float> intercect = line1.intercect(line2);
-    REQUIRE(intercect == Vec<float>{0.5f, 0.5f});
+    Line line1(Vec<double>{0, 0}, Vec<double>{1, 1});
+    Line line2(Vec<double>{0, 1}, Vec<double>{1, 0});
+    Vec<double> intercect = line1.intercect(line2);
+    REQUIRE(intercect == Vec<double>{0.5, 0.5});
   }
 
   {
-    Line line1(Vec<float>{-2.22f, -2.53f}, Vec<float>{5.04f, 2.17f});
-    Line line2(Vec<float>{-0.76f, 4.99f}, Vec<float>{6.22f, -1.85f});
-    Vec<float> intercect = line1.intercect(line2);
-    REQUIRE_THAT(intercect[0], Catch::Matchers::WithinAbs(3.28f, 0.01f));
+    Line line1(Vec<double>{-2.22, -2.53}, Vec<double>{5.04, 2.17});
+    Line line2(Vec<double>{-0.76, 4.99}, Vec<double>{6.22, -1.85});
+    Vec<double> intercect = line1.intercect(line2);
+    REQUIRE_THAT(intercect[0], Catch::Matchers::WithinAbs(3.28, 0.01));
   }
 }
 
 TEST_CASE("Line::orthogonal", "[Line]") {
   {
-    Line line1(Vec<float>{0, 0}, Vec<float>{1, 1});
-    Line line2(Vec<float>{0, 1}, Vec<float>{1, 0});
+    Line line1(Vec<double>{0, 0}, Vec<double>{1, 1});
+    Line line2(Vec<double>{0, 1}, Vec<double>{1, 0});
     REQUIRE(line1.orthogonal(line2));
   }
 
   {
-    Line line1(Vec<float>{1.5f, 0.7f}, Vec<float>{0.55f, -1.3f});
-    Line line2(Vec<float>{1.025f, -0.3f}, Vec<float>{0.393421f, 0});
+    Line line1(Vec<double>{1.5, 0.7}, Vec<double>{0.55, -1.3});
+    Line line2(Vec<double>{1.025, -0.3}, Vec<double>{0.393421, 0});
     REQUIRE(line1.orthogonal(line2));
   }
 }
 
 TEST_CASE("Line::perpendicular_bisector", "[Line]") {
   {
-    Line line(Vec<float>{0, 0}, Vec<float>{1, 1});
+    Line line(Vec<double>{0, 0}, Vec<double>{1, 1});
     Line bisector = line.perpendicular_bisector();
-    REQUIRE(bisector.p1() == Vec<float>{0.5f, 0.5f});
+    REQUIRE(bisector.p1() == Vec<double>{0.5, 0.5});
     REQUIRE(line.orthogonal(bisector));
   }
 
   {
-    Line line(Vec<float>{0, 0}, Vec<float>{2.0f / 3.0f, 2.0f / std::sqrt(3.0f)});
+    Line line(Vec<double>{0, 0}, Vec<double>{2.0 / 3.0, 2.0 / std::sqrt(3.0)});
     Line bisector = line.perpendicular_bisector();
     REQUIRE(bisector.p1() == line.midpoint());
     REQUIRE(line.orthogonal(bisector));
@@ -52,12 +52,12 @@ TEST_CASE("Line::perpendicular_bisector", "[Line]") {
 
 TEST_CASE("Line::midpoint", "[Line]") {
   {
-    Line line(Vec<float>{0, 0}, Vec<float>{1, 1});
-    REQUIRE(line.midpoint() == Vec<float>{0.5f, 0.5f});
+    Line line(Vec<double>{0, 0}, Vec<double>{1, 1});
+    REQUIRE(line.midpoint() == Vec<double>{0.5, 0.5});
   }
 
   {
-    Line line(Vec<float>{0, 0}, Vec<float>{2.0f / 3.0f, 2.0f / std::sqrt(3.0f)});
-    REQUIRE(line.midpoint() == Vec<float>{1.0f / 3.0f, 1.0f / std::sqrt(3.0f)});
+    Line line(Vec<double>{0, 0}, Vec<double>{2.0 / 3.0, 2.0 / std::sqrt(3.0)});
+    REQUIRE(line.midpoint() == Vec<double>{1.0 / 3.0, 1.0 / std::sqrt(3.0)});
   }
 }

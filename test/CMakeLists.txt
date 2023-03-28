@@ -17,3 +17,5 @@ add_test(
     NAME cctb-test
     COMMAND cctb-test
 )
+
+include(extra_compile_options)

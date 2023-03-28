@@ -17,7 +17,7 @@ std::ostream& operator<<(std::ostream& out, const TikzNode& node) {
 
 class TikzPoint : public TikzNode {
  public:
-  TikzPoint(float x, float y) : x_(x), y_(y) {}
+  TikzPoint(double x, double y) : x_(x), y_(y) {}
   virtual ~TikzPoint() = default;
 
   virtual std::string ToString() const override {
@@ -25,8 +25,8 @@ class TikzPoint : public TikzNode {
   }
 
  private:
-  float x_;
-  float y_;
+  double x_;
+  double y_;
 };
 
 class TikzPath : public TikzNode {
@@ -140,7 +140,7 @@ class TikzText : public TikzNode {
 
 class TikzCircle : public TikzNode {
  public:
-  TikzCircle(float radius) : radius_(radius) {}
+  TikzCircle(double radius) : radius_(radius) {}
   virtual ~TikzCircle() = default;
 
   virtual std::string ToString() const override {
@@ -148,7 +148,7 @@ class TikzCircle : public TikzNode {
   }
 
  private:
-  float radius_;
+  double radius_;
 };
 
 void TikzPainter::Prepare() const {
@@ -157,28 +157,28 @@ void TikzPainter::Prepare() const {
   out_ << "\\begin{tikzpicture}\n";
 }
 
-void TikzPainter::SetAxis(float xmin, float xmax, float ymin, float ymax) const {
+void TikzPainter::SetAxis(double xmin, double xmax, double ymin, double ymax) const {
   out_ << TikzLine({TikzPoint(xmin, 0), TikzPoint(xmax, 0)}, {});
   out_ << TikzLine({TikzPoint(0, ymin), TikzPoint(0, ymax)}, {});
 }
 
-void TikzPainter::DrawLine(float x1, float y1, float x2, float y2) const {
+void TikzPainter::DrawLine(double x1, double y1, double x2, double y2) const {
   out_ << TikzLine({TikzPoint(x1, y1), TikzPoint(x2, y2)}, {});
 }
 
-void TikzPainter::DrawArrow(float x1, float y1, float x2, float y2) const {
+void TikzPainter::DrawArrow(double x1, double y1, double x2, double y2) const {
   out_ << TikzLine({TikzPoint(x1, y1), TikzPoint(x2, y2)}, {"->", "red"});
 }
 
-void TikzPainter::DrawDottedLine(float x1, float y1, float x2, float y2) const {
+void TikzPainter::DrawDottedLine(double x1, double y1, double x2, double y2) const {
   out_ << TikzLine({TikzPoint(x1, y1), TikzPoint(x2, y2)}, {"dotted"});
 }
 
-void TikzPainter::DrawPoint(float x, float y) const {
+void TikzPainter::DrawPoint(double x, double y) const {
   out_ << TikzFilledDraw(TikzPoint(x, y), TikzCircle(0.1), {"black"});
 }
 
-void TikzPainter::DrawText(float x, float y, const std::string& text) const {
+void TikzPainter::DrawText(double x, double y, const std::string& text) const {
   out_ << TikzText(TikzPoint(x, y), text, {"font=\\small"});
 }
 
