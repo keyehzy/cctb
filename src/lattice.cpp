@@ -22,7 +22,7 @@ void OneDimensionalLattice::Plot(PainterBackend backend, std::ostream &out) cons
     for (int i = -1; i <= 1; i++) {
       Vec<double> offset = m_a1 * i;
       Vec<double> p = site.position + offset;
-      plotter->DrawPoint(p[0], 0.0f);
+      plotter->DrawPoint(p[0], 0.0);
     }
   }
 
@@ -31,7 +31,7 @@ void OneDimensionalLattice::Plot(PainterBackend backend, std::ostream &out) cons
       Vec<double> from_position = SiteAt(edge.from_index).position + m_a1 * i;
       Vec<double> to_position =
           SiteAt(edge.to_index).position + m_a1 * i + m_a1 * edge.relative_index[0];
-      plotter->DrawLine(from_position[0], 0.0f, to_position[0], 0.0f);
+      plotter->DrawLine(from_position[0], 0.0, to_position[0], 0.0);
     }
   }
 
@@ -92,17 +92,17 @@ void TwoDimensionalLattice::PlotBrillouinZone(PainterBackend backend, std::ostre
   double max_x = std::max(m_b1[0], m_b2[0]);
   double max_y = std::max(m_b1[1], m_b2[1]);
   double max_both = std::max(max_x, max_y);
-  plotter->SetAxis(-1.2f * max_both, 1.2f * max_both, -1.2f * max_both, 1.2f * max_both);
-  plotter->DrawText(1.2f * max_both, 0.25f, "$k_x$");
-  plotter->DrawText(0.25f, 1.2f * max_both, "$k_y$");
+  plotter->SetAxis(-1.2 * max_both, 1.2 * max_both, -1.2 * max_both, 1.2 * max_both);
+  plotter->DrawText(1.2 * max_both, 0.25, "$k_x$");
+  plotter->DrawText(0.25, 1.2 * max_both, "$k_y$");
 
   // Calculate all perpendicular bisectors
   Line b1_line(Vec<double>(0, 0), m_b1);
   Line b2_line(Vec<double>(0, 0), m_b2);
   Line b3_line(Vec<double>(0, 0), m_b1 + m_b2);
-  Line b1_line_mirrored(Vec<double>(0, 0), m_b1 * -1.0f);
-  Line b2_line_mirrored(Vec<double>(0, 0), m_b2 * -1.0f);
-  Line b3_line_mirrored(Vec<double>(0, 0), (m_b1 + m_b2) * -1.0f);
+  Line b1_line_mirrored(Vec<double>(0, 0), m_b1 * -1.0);
+  Line b2_line_mirrored(Vec<double>(0, 0), m_b2 * -1.0);
+  Line b3_line_mirrored(Vec<double>(0, 0), (m_b1 + m_b2) * -1.0);
   Line b1_perp = b1_line.perpendicular_bisector();
   Line b2_perp = b2_line.perpendicular_bisector();
   Line b3_perp = b3_line.perpendicular_bisector();

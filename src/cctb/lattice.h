@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cfloat>
 #include <complex>
 #include <fstream>
 #include <iostream>
@@ -21,7 +20,7 @@ struct Edge {
   int from_index;
   int to_index;
   double weight;
-  Edge(std::vector<int> idx, int from, int to, double w = 1.0f)
+  Edge(std::vector<int> idx, int from, int to, double w = 1.0)
       : relative_index(idx), from_index(from), to_index(to), weight(w) {}
 };
 
