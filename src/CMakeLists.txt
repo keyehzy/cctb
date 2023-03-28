@@ -10,6 +10,8 @@ add_library(
     Painter/Asymptote.cpp
     Geometry/Line.cpp
     LinearAlgebra/NumericArray.cpp
+    LinearAlgebra/Vector.cpp
+    LinearAlgebra/Matrix.cpp
 )
 target_include_directories(cctb-lib PUBLIC .)
 target_link_libraries(cctb-lib PRIVATE -lm)

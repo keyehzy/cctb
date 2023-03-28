@@ -7,45 +7,49 @@ class Matrix final : public NumericArray<double> {
  public:
   Matrix(int rows, int cols) : NumericArray<double>(rows * cols), rows_(rows), cols_(cols) {}
 
-  double& operator()(int i, int j) { return this->data_[i * cols_ + j]; }
-  double operator()(int i, int j) const { return this->data_[i * cols_ + j]; }
+  double& operator()(int i, int j) { return contiguous_->at(i * cols_ + j); }
+  double operator()(int i, int j) const { return contiguous_->at(i * cols_ + j); }
 
-  ALWAYS_INLINE Vector row(int i) const;
-  ALWAYS_INLINE Vector col(int j) const;
+  int rows() const { return rows_; }
+  int cols() const { return cols_; }
 
-  // matrix vector multiplication
-  ALWAYS_INLINE void gemv(double alpha, const Vector& x, double beta) const;
-
-  // A := alpha*x*y' + A
-  ALWAYS_INLINE void ger(double alpha, const Vector& x, const Vector& y) const;
+  friend ALWAYS_INLINE void gemv(double alpha, const Matrix& a, const Vector& x, double beta,
+                                 Vector& y);
+  friend ALWAYS_INLINE void ger(double alpha, const Vector& x, const Vector& y, Matrix& a);
+  friend ALWAYS_INLINE void gemm(double alpha, const Matrix& a, const Matrix& b, double beta,
+                                 Matrix& c);
 
  private:
   int rows_;
   int cols_;
 };
 
-ALWAYS_INLINE Vector Matrix::row(int i) const { 
-    return (*this).into(i * this->cols_, this->cols_, 1);
-}
-
-ALWAYS_INLINE Vector Matrix::col(int j) const { 
-    return (*this).into(j, this->rows_, this->cols_);
-}
-
-ALWAYS_INLINE void Matrix::gemv(double alpha, const Vector& x, double beta) const {
-  for (int i = 0; i < this->rows_; ++i) {
+ALWAYS_INLINE void gemv(double alpha, const Matrix& a, const Vector& x, double beta, Vector& y) {
+  for (int i = 0; i < a.rows(); ++i) {
     double result = 0;
-    for (int j = 0; j < this->cols_; ++j) {
-      result += this->data_[i * this->cols_ + j] * x[j];
+    for (int j = 0; j < a.cols(); ++j) {
+      result += a(i, j) * x[j];
     }
-    this->data_[i] = alpha * result + beta * this->data_[i];
+    y[i] = alpha * result + beta * y[i];
   }
 }
 
-ALWAYS_INLINE void Matrix::ger(double alpha, const Vector& x, const Vector& y) const {
-  for (int i = 0; i < this->rows_; ++i) {
-    for (int j = 0; j < this->cols_; ++j) {
-      this->data_[i * this->cols_ + j] += alpha * x[i] * y[j];
+ALWAYS_INLINE void ger(double alpha, const Vector& x, const Vector& y, Matrix& a) {
+  for (int i = 0; i < a.rows(); ++i) {
+    for (int j = 0; j < a.cols(); ++j) {
+      a(i, j) += alpha * x[i] * y[j];
+    }
+  }
+}
+
+ALWAYS_INLINE void gemm(double alpha, const Matrix& a, const Matrix& b, double beta, Matrix& c) {
+  for (int i = 0; i < a.rows(); ++i) {
+    for (int j = 0; j < b.cols(); ++j) {
+      double result = 0;
+      for (int k = 0; k < a.cols(); ++k) {
+        result += a(i, k) * b(k, j);
+      }
+      c(i, j) = alpha * result + beta * c(i, j);
     }
   }
 }

@@ -2,8 +2,8 @@
 
 #include <cmath>
 #include <cstdint>
-#include <cstdlib>
-#include <memory>
+
+#include "LinearAlgebra/ContiguousArray.h"
 
 #define ALWAYS_INLINE inline __attribute__((always_inline))
 
@@ -12,56 +12,66 @@ class NumericArray {
  public:
   NumericArray(int size);
   NumericArray(int start, int size, int stride);
-  NumericArray(T* data, int start, int size, int stride);
+  NumericArray(ContiguousArray<T> data, int start, int size, int stride);
   NumericArray(const NumericArray& other);
 
-  ~NumericArray() { std::free(data_); }
+  virtual ~NumericArray() {}
 
-  T& operator[](int index) { return data_[start_ + index * stride_]; }
+  T& operator[](int index) { return contiguous_->at(start_ + index * stride_); }
 
-  const T& operator[](int index) const { return data_[start_ + index * stride_]; }
+  const T& operator[](int index) const { return contiguous_->at(start_ + index * stride_); }
 
   NumericArray& operator=(const NumericArray& other);
 
   NumericArray into(int start, int size, int stride) const;
 
-  friend ALWAYS_INLINE bool operator==(const NumericArray<T>& lhs, const NumericArray<T>& rhs);
+  int size() const { return size_; }
+
+  int stride() const { return stride_; }
+
+  T* data() const { return contiguous_->data() + start_; }
+
+  template <typename U>
+  friend ALWAYS_INLINE bool operator==(const NumericArray<U>& lhs, const NumericArray<U>& rhs);
 
  protected:
-  T* data_;
   int start_;
   int size_;
   int stride_;
+  RefPtr<ContiguousArray<T>> contiguous_;
 };
 
 template <typename T>
-NumericArray<T>::NumericArray(int size) : start_(0), size_(size), stride_(1) {
-  data_ = (T*)std::aligned_alloc(32, size_ * stride_ * sizeof(T));
-}
+NumericArray<T>::NumericArray(int size)
+    : start_(0), size_(size), stride_(1), contiguous_(new ContiguousArray<T>(size, 32)) {}
 
 template <typename T>
 NumericArray<T>::NumericArray(int start, int size, int stride)
-    : start_(start), size_(size), stride_(stride) {
-  data_ = (T*)std::aligned_alloc(32, size_ * stride_ * sizeof(T));
-}
+    : start_(start),
+      size_(size),
+      stride_(stride),
+      contiguous_(new ContiguousArray<T>(size * stride * sizeof(T), 32)) {}
 
 template <typename T>
-NumericArray<T>::NumericArray(T* data, int start, int size, int stride)
-    : data_(data), start_(start), size_(size), stride_(stride) {}
+NumericArray<T>::NumericArray(ContiguousArray<T> data, int start, int size, int stride)
+    : start_(start), size_(size), stride_(stride), contiguous_(data) {}
 
 template <typename T>
 NumericArray<T>::NumericArray(const NumericArray& other)
-    : data_(other.data_), start_(other.start_), size_(other.size_), stride_(other.stride_) {}
+    : start_(other.start_),
+      size_(other.size_),
+      stride_(other.stride_),
+      contiguous_(other.contiguous_) {}
 
 template <typename T>
 NumericArray<T> NumericArray<T>::into(int start, int size, int stride) const {
-  return NumericArray<T>(data_, start, size, stride);
+  return NumericArray<T>(contiguous_, start, size, stride);
 }
 
 template <typename T>
 NumericArray<T>& NumericArray<T>::operator=(const NumericArray& other) {
   if (this != &other) {
-    data_ = other.data_;
+    contiguous_ = other.contiguous_;
     start_ = other.start_;
     size_ = other.size_;
     stride_ = other.stride_;

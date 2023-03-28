@@ -23,6 +23,18 @@ class GrapheneLatticeExtendedTest : public TwoDimensionalLattice {
     AddEdge(Edge({0, 1}, 2, 3));
   };
 };
+
+class TriangularLatticeTest : public TwoDimensionalLattice {
+ public:
+  TriangularLatticeTest(float a = 1.0f)
+      : TwoDimensionalLattice(Vec<float>(a, 0), Vec<float>(0.5f * a, 0.5f * a * sqrtf(3.0f))) {
+    AddSite(Site(Vec<float>{0, 0}));
+    AddEdge(Edge({1, 0}, 0, 0));
+    AddEdge(Edge({0, 1}, 0, 0));
+    AddEdge(Edge({1, -1}, 0, 0));
+  }
+};
+
 class GrapheneLattice : public TwoDimensionalLattice {
  public:
   GrapheneLattice()
@@ -37,7 +49,7 @@ class GrapheneLattice : public TwoDimensionalLattice {
 };
 
 int main(void) {
-  GrapheneLattice lattice;
+  TriangularLatticeTest lattice;
   std::ofstream lattice_file("lattice.tex");
   lattice.Plot(PainterBackend::kTikz, lattice_file);
   // lattice.AdjMatrix().Print();
