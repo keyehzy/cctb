@@ -68,7 +68,7 @@ struct Vec {
   }
 
   double dot(const Vec& other) const {
-    double result = 0.0f;
+    double result = 0.0;
     for (int i = 0; i < data.size(); i++) {
       result += data[i] * other.data[i];
     }

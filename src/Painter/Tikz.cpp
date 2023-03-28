@@ -37,7 +37,7 @@ class TikzPath : public TikzNode {
   virtual std::string ToString() const override {
     assert(points_.size() >= 2);
     std::string path = points_[0].ToString();
-    for (size_t i = 1; i < points_.size(); ++i) {
+    for (int i = 1; i < points_.size(); ++i) {
       path += " -- " + points_[i].ToString();
     }
     return path;
@@ -52,7 +52,7 @@ std::string get_options(const std::vector<std::string>& options) {
 
   if (!options.empty()) {
     options_str += "[" + options[0];
-    for (size_t i = 1; i < options.size(); ++i) {
+    for (int i = 1; i < options.size(); ++i) {
       options_str += "," + options[i];
     }
     options_str += "]";
@@ -123,7 +123,7 @@ class TikzText : public TikzNode {
 
     if (!options_.empty()) {
       options += "[" + options_[0];
-      for (size_t i = 1; i < options_.size(); ++i) {
+      for (int i = 1; i < options_.size(); ++i) {
         options += "," + options_[i];
       }
       options += "]";
