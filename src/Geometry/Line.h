@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cctb/vec.h"
+#include "Geometry/Point.h"
 
 class Line {
  public:

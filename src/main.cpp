@@ -4,7 +4,7 @@
 
 #include "cctb/lattice.h"
 #include "cctb/matrix.h"
-#include "cctb/vec.h"
+#include "Geometry/Point.h"
 
 class GrapheneLatticeExtendedTest : public TwoDimensionalLattice {
  public:

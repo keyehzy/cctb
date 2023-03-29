@@ -8,7 +8,7 @@
 
 #include "Painter/Painter.h"
 #include "cctb/matrix.h"
-#include "cctb/vec.h"
+#include "Geometry/Point.h"
 
 struct Edge {
   std::vector<int> relative_index;
