@@ -25,11 +25,11 @@ class Lattice {
   Lattice() {}
   virtual ~Lattice() {}
 
-  void AddSite(NewVec<D> site) { m_sites.push_back(site); }
+  void AddSite(Point<D> site) { m_sites.push_back(site); }
   void AddEdge(Edge edge) { m_edges.push_back(edge); }
 
-  std::vector<NewVec<D>> Sites() const { return m_sites; }
-  NewVec<D> SiteAt(int index) const { return m_sites[index]; }
+  std::vector<Point<D>> Sites() const { return m_sites; }
+  Point<D> SiteAt(int index) const { return m_sites[index]; }
 
   std::vector<Edge> Edges() const { return m_edges; }
   int Size() const { return m_sites.size(); }
@@ -38,10 +38,10 @@ class Lattice {
 
   Matrix<int> AdjMatrix() const;
 
-  virtual Matrix<std::complex<double>> HoppingMatrix(NewVec<D> k) const = 0;
+  virtual Matrix<std::complex<double>> HoppingMatrix(Point<D> k) const = 0;
 
  protected:
-  std::vector<NewVec<D>> m_sites;
+  std::vector<Point<D>> m_sites;
   std::vector<Edge> m_edges;
 };
 
@@ -57,40 +57,40 @@ Matrix<int> Lattice<D>::AdjMatrix() const {
 
 class OneDimensionalLattice : public Lattice<1> {
  public:
-  OneDimensionalLattice(NewVec<1> a1) : m_a1(a1) {}
+  OneDimensionalLattice(Point<1> a1) : m_a1(a1) {}
 
   void Plot(PainterBackend, std::ostream &) const override;
 
-  Matrix<std::complex<double>> HoppingMatrix(NewVec<1> k) const override;
+  Matrix<std::complex<double>> HoppingMatrix(Point<1> k) const override;
 
  protected:
-  NewVec<1> m_a1;
+  Point<1> m_a1;
 };
 
 class TwoDimensionalLattice : public Lattice<2> {
  public:
-  TwoDimensionalLattice(const NewVec<2> &a1, const NewVec<2> &a2) : m_a1(a1), m_a2(a2) {
+  TwoDimensionalLattice(const Point<2> &a1, const Point<2> &a2) : m_a1(a1), m_a2(a2) {
     // https://physics.stackexchange.com/questions/340860/reciprocal-lattice-in-2d
     double det = a1[0] * a2[1] - a1[1] * a2[0];
     double pref = 2.0 * M_PI / det;
-    m_b1 = NewVec<2>(a2[1], -a2[0]) * pref;
-    m_b2 = NewVec<2>(-a1[1], a1[0]) * pref;
+    m_b1 = Point<2>(a2[1], -a2[0]) * pref;
+    m_b2 = Point<2>(-a1[1], a1[0]) * pref;
   }
 
-  NewVec<2> a1() const { return m_a1; }
-  NewVec<2> a2() const { return m_a2; }
-  NewVec<2> b1() const { return m_b1; }
-  NewVec<2> b2() const { return m_b2; }
+  Point<2> a1() const { return m_a1; }
+  Point<2> a2() const { return m_a2; }
+  Point<2> b1() const { return m_b1; }
+  Point<2> b2() const { return m_b2; }
 
   void Plot(PainterBackend, std::ostream &) const override;
 
   void PlotBrillouinZone(PainterBackend, std::ostream &) const;
 
-  Matrix<std::complex<double>> HoppingMatrix(NewVec<2> k) const override;
+  Matrix<std::complex<double>> HoppingMatrix(Point<2> k) const override;
 
  protected:
-  NewVec<2> m_a1;
-  NewVec<2> m_a2;
-  NewVec<2> m_b1;
-  NewVec<2> m_b2;
+  Point<2> m_a1;
+  Point<2> m_a2;
+  Point<2> m_b1;
+  Point<2> m_b2;
 };
