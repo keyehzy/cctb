@@ -74,8 +74,8 @@ TEST_CASE("LinearChain", "[lattice]") {
 
 class SquareLatticeTest : public TwoDimensionalLattice {
  public:
-  SquareLatticeTest() : TwoDimensionalLattice(Vec<double>{1.0, 0}, Vec<double>{0, 1.0}) {
-    AddSite(Site(Vec<double>{0, 0}));
+  SquareLatticeTest() : TwoDimensionalLattice(NewVec<2>{1.0, 0}, NewVec<2>(0, 1.0)) {
+    AddSite(NewVec<2>(0, 0));
     AddEdge(Edge({0, 1}, 0, 0));
     AddEdge(Edge({1, 0}, 0, 0));
   }
@@ -84,7 +84,7 @@ class SquareLatticeTest : public TwoDimensionalLattice {
 TEST_CASE("SquareLattice", "[lattice]") {
   SquareLatticeTest lattice;
   REQUIRE(lattice.Size() == 1);
-  REQUIRE(lattice.SiteAt(0).position == Vec<double>{0, 0});
+  REQUIRE(lattice.SiteAt(0) == NewVec<2>(0, 0));
   REQUIRE(lattice.Edges().size() == 2);
   REQUIRE(lattice.Edges()[0].relative_index == std::vector<int>{0, 1});
   REQUIRE(lattice.Edges()[1].relative_index == std::vector<int>{1, 0});
@@ -98,7 +98,7 @@ TEST_CASE("SquareLattice", "[lattice]") {
   REQUIRE(adj_matrix.cols == 1);
   REQUIRE(adj_matrix(0, 0) == 1);
 
-  Matrix<std::complex<double>> hopping_matrix = lattice.HoppingMatrix(Vec<double>{0.5, 0.8});
+  Matrix<std::complex<double>> hopping_matrix = lattice.HoppingMatrix(NewVec<2>{0.5, 0.8});
   REQUIRE(hopping_matrix.rows == 1);
   REQUIRE(hopping_matrix.cols == 1);
   REQUIRE(hopping_matrix(0, 0) == std::complex<double>(2.0 * cos(0.5) + 2.0 * cos(0.8), 0));
@@ -107,10 +107,9 @@ TEST_CASE("SquareLattice", "[lattice]") {
 class GrapheneLatticeTest : public TwoDimensionalLattice {
  public:
   GrapheneLatticeTest()
-      : TwoDimensionalLattice(Vec<double>(1.5, 0.5 * sqrt(3.0)),
-                              Vec<double>(1.5, -0.5 * sqrt(3.0))) {
-    AddSite(Site(Vec<double>{0, 0}));
-    AddSite(Site(Vec<double>{0.5, 0.5 * sqrt(3.0)}));
+      : TwoDimensionalLattice(NewVec<2>(1.5, 0.5 * sqrt(3.0)), NewVec<2>(1.5, -0.5 * sqrt(3.0))) {
+    AddSite(NewVec<2>{0, 0});
+    AddSite(NewVec<2>{0.5, 0.5 * sqrt(3.0)});
     AddEdge(Edge({0, 0}, 0, 1));
     AddEdge(Edge({1, 0}, 1, 0));
     AddEdge(Edge({1, -1}, 1, 0));
@@ -120,14 +119,13 @@ class GrapheneLatticeTest : public TwoDimensionalLattice {
 TEST_CASE("GrapheneLattice", "[lattice]") {
   GrapheneLatticeTest lattice;
   REQUIRE(lattice.Size() == 2);
-  REQUIRE(lattice.a1() == Vec<double>(1.5, 0.5 * sqrt(3.0)));
-  REQUIRE(lattice.a2() == Vec<double>(1.5, -0.5 * sqrt(3.0)));
-  REQUIRE_THAT(lattice.b1(), ApproxEqualVec(Vec<double>(2.0 * M_PI / 3.0, 2.0 * M_PI / sqrt(3.0))));
-  REQUIRE_THAT(lattice.b2(),
-               ApproxEqualVec(Vec<double>(2.0 * M_PI / 3.0, -2.0 * M_PI / sqrt(3.0))));
+  REQUIRE(lattice.a1() == NewVec<2>(1.5, 0.5 * sqrt(3.0)));
+  REQUIRE(lattice.a2() == NewVec<2>(1.5, -0.5 * sqrt(3.0)));
+  REQUIRE_THAT(lattice.b1(), ApproxEqualVec(NewVec<2>(2.0 * M_PI / 3.0, 2.0 * M_PI / sqrt(3.0))));
+  REQUIRE_THAT(lattice.b2(), ApproxEqualVec(NewVec<2>(2.0 * M_PI / 3.0, -2.0 * M_PI / sqrt(3.0))));
 
-  REQUIRE(lattice.SiteAt(0).position == Vec<double>{0, 0});
-  REQUIRE(lattice.SiteAt(1).position == Vec<double>{0.5, 0.5 * sqrt(3.0)});
+  REQUIRE(lattice.SiteAt(0) == NewVec<2>{0, 0});
+  REQUIRE(lattice.SiteAt(1) == NewVec<2>{0.5, 0.5 * sqrt(3.0)});
   REQUIRE(lattice.Edges().size() == 3);
   REQUIRE(lattice.Edges()[0].relative_index == std::vector<int>{0, 0});
   REQUIRE(lattice.Edges()[1].relative_index == std::vector<int>{1, 0});
@@ -147,10 +145,10 @@ TEST_CASE("GrapheneLattice", "[lattice]") {
   REQUIRE(adj_matrix(1, 0) == 1);
   REQUIRE(adj_matrix(1, 1) == 0);
 
-  Vec<double> d1{0.5, 0.5 * sqrt(3.0)};
-  Vec<double> d2{0.5, -0.5 * sqrt(3.0)};
-  Vec<double> d3{-1.0, 0.0};
-  Vec<double> k{0.5, 0.8};
+  NewVec<2> d1{0.5, 0.5 * sqrt(3.0)};
+  NewVec<2> d2{0.5, -0.5 * sqrt(3.0)};
+  NewVec<2> d3{-1.0, 0.0};
+  NewVec<2> k{0.5, 0.8};
   std::complex<double> comp = std::complex<double>(0.0, 1.0);
 
   Matrix<std::complex<double>> hopping_matrix = lattice.HoppingMatrix(k);
@@ -167,11 +165,11 @@ TEST_CASE("GrapheneLattice", "[lattice]") {
 class GrapheneLatticeExtendedTest : public TwoDimensionalLattice {
  public:
   GrapheneLatticeExtendedTest()
-      : TwoDimensionalLattice(Vec<double>(3.0, 0), Vec<double>(0, sqrt(3.0))) {
-    AddSite(Site(Vec<double>{0, 0}));
-    AddSite(Site(Vec<double>{0.5, 0.5 * sqrt(3.0)}));
-    AddSite(Site(Vec<double>{1.5, 0.5 * sqrt(3.0)}));
-    AddSite(Site(Vec<double>{2.0, 0}));
+      : TwoDimensionalLattice(NewVec<2>(3.0, 0), NewVec<2>(0, sqrt(3.0))) {
+    AddSite(NewVec<2>{0, 0});
+    AddSite(NewVec<2>{0.5, 0.5 * sqrt(3.0)});
+    AddSite(NewVec<2>{1.5, 0.5 * sqrt(3.0)});
+    AddSite(NewVec<2>{2.0, 0});
     AddEdge(Edge({0, 0}, 0, 1));
     AddEdge(Edge({0, 0}, 1, 2));
     AddEdge(Edge({0, 0}, 2, 3));
@@ -185,10 +183,10 @@ class GrapheneLatticeExtendedTest : public TwoDimensionalLattice {
 TEST_CASE("GrapheneLatticeExtended", "[lattice]") {
   GrapheneLatticeExtendedTest lattice;
   REQUIRE(lattice.Size() == 4);
-  REQUIRE(lattice.SiteAt(0).position == Vec<double>{0, 0});
-  REQUIRE(lattice.SiteAt(1).position == Vec<double>{0.5, 0.5 * sqrt(3.0)});
-  REQUIRE(lattice.SiteAt(2).position == Vec<double>{1.5, 0.5 * sqrt(3.0)});
-  REQUIRE(lattice.SiteAt(3).position == Vec<double>{2.0, 0});
+  REQUIRE(lattice.SiteAt(0) == NewVec<2>{0, 0});
+  REQUIRE(lattice.SiteAt(1) == NewVec<2>{0.5, 0.5 * sqrt(3.0)});
+  REQUIRE(lattice.SiteAt(2) == NewVec<2>{1.5, 0.5 * sqrt(3.0)});
+  REQUIRE(lattice.SiteAt(3) == NewVec<2>{2.0, 0});
   REQUIRE(lattice.Edges().size() == 6);
   REQUIRE(lattice.Edges()[0].relative_index == std::vector<int>{0, 0});
   REQUIRE(lattice.Edges()[1].relative_index == std::vector<int>{0, 0});
@@ -233,8 +231,8 @@ TEST_CASE("GrapheneLatticeExtended", "[lattice]") {
 class TriangularLatticeTest : public TwoDimensionalLattice {
  public:
   TriangularLatticeTest(double a = 1.0)
-      : TwoDimensionalLattice(Vec<double>(a, 0), Vec<double>(0.5 * a, 0.5 * a * sqrt(3.0))) {
-    AddSite(Site(Vec<double>{0, 0}));
+      : TwoDimensionalLattice(NewVec<2>(a, 0), NewVec<2>(0.5 * a, 0.5 * a * sqrt(3.0))) {
+    AddSite(NewVec<2>{0, 0});
     AddEdge(Edge({1, 0}, 0, 0));
     AddEdge(Edge({0, 1}, 0, 0));
     AddEdge(Edge({1, -1}, 0, 0));
@@ -244,7 +242,7 @@ class TriangularLatticeTest : public TwoDimensionalLattice {
 TEST_CASE("TriangularLattice", "[lattice]") {
   TriangularLatticeTest lattice;
   REQUIRE(lattice.Size() == 1);
-  REQUIRE(lattice.SiteAt(0).position == Vec<double>{0, 0});
+  REQUIRE(lattice.SiteAt(0) == NewVec<2>{0, 0});
   REQUIRE(lattice.Edges().size() == 3);
   REQUIRE(lattice.Edges()[0].relative_index == std::vector<int>{1, 0});
   REQUIRE(lattice.Edges()[1].relative_index == std::vector<int>{0, 1});
@@ -264,10 +262,10 @@ TEST_CASE("TriangularLattice", "[lattice]") {
 
 class KagomeLatticeTest : public TwoDimensionalLattice {
  public:
-  KagomeLatticeTest() : TwoDimensionalLattice(Vec<double>(2, 0), Vec<double>(1.0, sqrt(3.0))) {
-    AddSite(Site(Vec<double>{0, 0}));
-    AddSite(Site(Vec<double>{1.0, 0}));
-    AddSite(Site(Vec<double>{0.5, 0.5 * sqrt(3.0)}));
+  KagomeLatticeTest() : TwoDimensionalLattice(NewVec<2>(2, 0), NewVec<2>(1.0, sqrt(3.0))) {
+    AddSite(NewVec<2>{0, 0});
+    AddSite(NewVec<2>{1.0, 0});
+    AddSite(NewVec<2>{0.5, 0.5 * sqrt(3.0)});
     AddEdge(Edge({0, 0}, 0, 1));
     AddEdge(Edge({0, 0}, 1, 2));
     AddEdge(Edge({0, 0}, 2, 0));
@@ -280,9 +278,9 @@ class KagomeLatticeTest : public TwoDimensionalLattice {
 TEST_CASE("KagomeLattice", "[lattice]") {
   KagomeLatticeTest lattice;
   REQUIRE(lattice.Size() == 3);
-  REQUIRE(lattice.SiteAt(0).position == Vec<double>{0, 0});
-  REQUIRE(lattice.SiteAt(1).position == Vec<double>{1.0, 0});
-  REQUIRE(lattice.SiteAt(2).position == Vec<double>{0.5, 0.5 * sqrt(3.0)});
+  REQUIRE(lattice.SiteAt(0) == NewVec<2>{0, 0});
+  REQUIRE(lattice.SiteAt(1) == NewVec<2>{1.0, 0});
+  REQUIRE(lattice.SiteAt(2) == NewVec<2>{0.5, 0.5 * sqrt(3.0)});
   REQUIRE(lattice.Edges().size() == 6);
   REQUIRE(lattice.Edges()[0].relative_index == std::vector<int>{0, 0});
   REQUIRE(lattice.Edges()[1].relative_index == std::vector<int>{0, 0});
