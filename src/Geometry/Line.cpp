@@ -27,9 +27,11 @@ Line Line::perpendicular_bisector() const {
 }
 
 bool Line::orthogonal(const Line& other) const {
-  Point<2> p1 = p2_ - p1_;
-  Point<2> p2 = other.p2() - other.p1();
-  return std::abs(p1.dot(p2)) < 1e-6;
+  double dx = (p2_[0] - p1_[0]);
+  double dy = (p2_[1] - p1_[1]);
+  double dx2 = (other.p2()[0] - other.p1()[0]);
+  double dy2 = (other.p2()[1] - other.p1()[1]);
+  return std::abs(dx * dx2 + dy * dy2) < 1e-6;
 }
 
 Point<2> Line::midpoint() const {

@@ -6,9 +6,10 @@
 #include <ostream>
 #include <vector>
 
+#include "Geometry/Point.h"
+#include "Geometry/Vector.h"
 #include "Painter/Painter.h"
 #include "cctb/matrix.h"
-#include "Geometry/Point.h"
 
 struct Edge {
   std::vector<int> relative_index;
@@ -38,7 +39,7 @@ class Lattice {
 
   Matrix<int> AdjMatrix() const;
 
-  virtual Matrix<std::complex<double>> HoppingMatrix(Point<D> k) const = 0;
+  virtual Matrix<std::complex<double>> HoppingMatrix(Vector<D> k) const = 0;
 
  protected:
   std::vector<Point<D>> m_sites;
@@ -57,40 +58,40 @@ Matrix<int> Lattice<D>::AdjMatrix() const {
 
 class OneDimensionalLattice : public Lattice<1> {
  public:
-  OneDimensionalLattice(Point<1> a1) : m_a1(a1) {}
+  OneDimensionalLattice(Vector<1> a1) : m_a1(a1) {}
 
   void Plot(PainterBackend, std::ostream &) const override;
 
-  Matrix<std::complex<double>> HoppingMatrix(Point<1> k) const override;
+  Matrix<std::complex<double>> HoppingMatrix(Vector<1> k) const override;
 
  protected:
-  Point<1> m_a1;
+  Vector<1> m_a1;
 };
 
 class TwoDimensionalLattice : public Lattice<2> {
  public:
-  TwoDimensionalLattice(const Point<2> &a1, const Point<2> &a2) : m_a1(a1), m_a2(a2) {
+  TwoDimensionalLattice(const Vector<2> &a1, const Vector<2> &a2) : m_a1(a1), m_a2(a2) {
     // https://physics.stackexchange.com/questions/340860/reciprocal-lattice-in-2d
     double det = a1[0] * a2[1] - a1[1] * a2[0];
     double pref = 2.0 * M_PI / det;
-    m_b1 = Point<2>(a2[1], -a2[0]) * pref;
-    m_b2 = Point<2>(-a1[1], a1[0]) * pref;
+    m_b1 = pref * Vector<2>(a2[1], -a2[0]);
+    m_b2 = pref * Vector<2>(-a1[1], a1[0]);
   }
 
-  Point<2> a1() const { return m_a1; }
-  Point<2> a2() const { return m_a2; }
-  Point<2> b1() const { return m_b1; }
-  Point<2> b2() const { return m_b2; }
+  Vector<2> a1() const { return m_a1; }
+  Vector<2> a2() const { return m_a2; }
+  Vector<2> b1() const { return m_b1; }
+  Vector<2> b2() const { return m_b2; }
 
   void Plot(PainterBackend, std::ostream &) const override;
 
   void PlotBrillouinZone(PainterBackend, std::ostream &) const;
 
-  Matrix<std::complex<double>> HoppingMatrix(Point<2> k) const override;
+  Matrix<std::complex<double>> HoppingMatrix(Vector<2> k) const override;
 
  protected:
-  Point<2> m_a1;
-  Point<2> m_a2;
-  Point<2> m_b1;
-  Point<2> m_b2;
+  Vector<2> m_a1;
+  Vector<2> m_a2;
+  Vector<2> m_b1;
+  Vector<2> m_b2;
 };
