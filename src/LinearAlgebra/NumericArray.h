@@ -1,80 +1,86 @@
 #pragma once
 
 #include <cmath>
-#include <cstdint>
-
-#include "LinearAlgebra/ContiguousArray.h"
+#include <cstdlib>
 
 #define ALWAYS_INLINE inline __attribute__((always_inline))
+
+template <typename T>
+class NBuffer {
+ public:
+  NBuffer(int size)
+      : size_(size), data_(static_cast<T*>(std::aligned_alloc(32, size * sizeof(T)))) {}
+
+  NBuffer(const NBuffer& other) = delete;
+  NBuffer& operator=(const NBuffer& other) = delete;
+
+  ~NBuffer() { std::free(data_); }
+
+  int size() const { return size_; }
+
+  T* data() const { return data_; }
+
+  T& operator[](int index) { return data_[index]; }
+
+  const T& operator[](int index) const { return data_[index]; }
+
+ private:
+  int size_;
+  T* data_;
+};
 
 template <typename T>
 class NumericArray {
  public:
   NumericArray(int size);
   NumericArray(int start, int size, int stride);
-  NumericArray(ContiguousArray<T> data, int start, int size, int stride);
-  NumericArray(const NumericArray& other);
+  NumericArray(const NumericArray& other) = delete;
+  NumericArray& operator=(const NumericArray& other) = delete;
 
-  virtual ~NumericArray() {}
+  ~NumericArray() {}
 
-  T& operator[](int index) { return contiguous_->at(start_ + index * stride_); }
+  T& operator[](int index) { return buffer_[start_ + index * stride_]; }
 
-  const T& operator[](int index) const { return contiguous_->at(start_ + index * stride_); }
+  const T& operator[](int index) const { return buffer_[start_ + index * stride_]; }
 
-  NumericArray& operator=(const NumericArray& other);
-
-  NumericArray into(int start, int size, int stride) const;
+  int start() const { return start_; }
 
   int size() const { return size_; }
 
   int stride() const { return stride_; }
 
-  T* data() const { return contiguous_->data() + start_; }
-
-  template <typename U>
-  friend ALWAYS_INLINE bool operator==(const NumericArray<U>& lhs, const NumericArray<U>& rhs);
+  NBuffer<T>& buffer() { return buffer_; }
 
  protected:
   int start_;
   int size_;
   int stride_;
-  RefPtr<ContiguousArray<T>> contiguous_;
+  NBuffer<T> buffer_;
 };
 
 template <typename T>
-NumericArray<T>::NumericArray(int size)
-    : start_(0), size_(size), stride_(1), contiguous_(new ContiguousArray<T>(size, 32)) {}
+NumericArray<T>::NumericArray(int size) : start_(0), size_(size), stride_(1), buffer_(size) {}
 
 template <typename T>
 NumericArray<T>::NumericArray(int start, int size, int stride)
-    : start_(start),
-      size_(size),
-      stride_(stride),
-      contiguous_(new ContiguousArray<T>(size * stride * sizeof(T), 32)) {}
+    : start_(start), size_(size), stride_(stride), buffer_(size * stride) {}
 
 template <typename T>
-NumericArray<T>::NumericArray(ContiguousArray<T> data, int start, int size, int stride)
-    : start_(start), size_(size), stride_(stride), contiguous_(data) {}
-
-template <typename T>
-NumericArray<T>::NumericArray(const NumericArray& other)
-    : start_(other.start_),
-      size_(other.size_),
-      stride_(other.stride_),
-      contiguous_(other.contiguous_) {}
-
-template <typename T>
-NumericArray<T> NumericArray<T>::into(int start, int size, int stride) const {
-  return NumericArray<T>(contiguous_, start, size, stride);
+ALWAYS_INLINE bool operator==(const NumericArray<T>& lhs, const NumericArray<T>& rhs) {
+  if (lhs.size() != rhs.size()) {
+    return false;
+  }
+  for (int i = 0; i < lhs.size(); ++i) {
+    if (lhs[i] != rhs[i]) {
+      return false;
+    }
+  }
+  return true;
 }
 
 template <typename T>
-NumericArray<T>& NumericArray<T>::operator=(const NumericArray& other) {
-  if (this != &other) {
-    contiguous_ = other.contiguous_;
-    start_ = other.start_;
-    size_ = other.size_;
-    stride_ = other.stride_;
+ALWAYS_INLINE void axpy(T alpha, const NumericArray<T>& x, NumericArray<T>& y) {
+  for (int i = 0; i < x.size(); ++i) {
+    y[i] += alpha * x[i];
   }
-  return *this;
 }

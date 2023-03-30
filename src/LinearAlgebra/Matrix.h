@@ -1,30 +1,22 @@
 #pragma once
 
 #include "LinearAlgebra/NumericArray.h"
-#include "LinearAlgebra/Vector.h"
 
-class Matrix final : public NumericArray<double> {
+template <typename T>
+class Matrix final : public NumericArray<T> {
  public:
-  Matrix(int rows, int cols) : NumericArray<double>(rows * cols), rows_(rows), cols_(cols) {}
+  Matrix(int rows, int cols) : NumericArray<T>(0, cols, rows) {}
 
-  double& operator()(int i, int j) { return contiguous_->at(i * cols_ + j); }
-  double operator()(int i, int j) const { return contiguous_->at(i * cols_ + j); }
+  T& operator()(int i, int j) { return this->buffer_[j * rows() + i]; }
+  T operator()(int i, int j) const { return this->buffer_[j * rows() + i]; }
 
-  int rows() const { return rows_; }
-  int cols() const { return cols_; }
-
-  friend ALWAYS_INLINE void gemv(double alpha, const Matrix& a, const Vector& x, double beta,
-                                 Vector& y);
-  friend ALWAYS_INLINE void ger(double alpha, const Vector& x, const Vector& y, Matrix& a);
-  friend ALWAYS_INLINE void gemm(double alpha, const Matrix& a, const Matrix& b, double beta,
-                                 Matrix& c);
-
- private:
-  int rows_;
-  int cols_;
+  int rows() const { return this->stride_; }
+  int cols() const { return this->size_; }
 };
 
-ALWAYS_INLINE void gemv(double alpha, const Matrix& a, const Vector& x, double beta, Vector& y) {
+template <typename T>
+ALWAYS_INLINE void gemv(T alpha, const Matrix<T>& a, const NumericArray<T>& x, T beta,
+                        NumericArray<T>& y) {
   for (int i = 0; i < a.rows(); ++i) {
     double result = 0;
     for (int j = 0; j < a.cols(); ++j) {
@@ -34,7 +26,8 @@ ALWAYS_INLINE void gemv(double alpha, const Matrix& a, const Vector& x, double b
   }
 }
 
-ALWAYS_INLINE void ger(double alpha, const Vector& x, const Vector& y, Matrix& a) {
+template <typename T>
+ALWAYS_INLINE void ger(T alpha, const NumericArray<T>& x, const NumericArray<T>& y, Matrix<T>& a) {
   for (int i = 0; i < a.rows(); ++i) {
     for (int j = 0; j < a.cols(); ++j) {
       a(i, j) += alpha * x[i] * y[j];
@@ -42,7 +35,8 @@ ALWAYS_INLINE void ger(double alpha, const Vector& x, const Vector& y, Matrix& a
   }
 }
 
-ALWAYS_INLINE void gemm(double alpha, const Matrix& a, const Matrix& b, double beta, Matrix& c) {
+template <typename T>
+ALWAYS_INLINE void gemm(T alpha, const Matrix<T>& a, const Matrix<T>& b, T beta, Matrix<T>& c) {
   for (int i = 0; i < a.rows(); ++i) {
     for (int j = 0; j < b.cols(); ++j) {
       double result = 0;
