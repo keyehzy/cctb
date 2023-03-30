@@ -103,12 +103,12 @@ void TwoDimensionalLattice::PlotBrillouinZone(PainterBackend backend, std::ostre
   Line b3_perp_mirrored = b3_line_mirrored.perpendicular_bisector();
 
   // Intersect bisectors
-  Point<2> k1 = b1_perp.intercect(b2_perp_mirrored);
-  Point<2> k2 = b2_perp.intercect(b1_perp_mirrored);
-  Point<2> k3 = b1_perp.intercect(b3_perp);
-  Point<2> k4 = b2_perp.intercect(b3_perp);
-  Point<2> k5 = b1_perp_mirrored.intercect(b3_perp_mirrored);
-  Point<2> k6 = b2_perp_mirrored.intercect(b3_perp_mirrored);
+  Point<2> k1 = b1_perp.intersect(b2_perp_mirrored);
+  Point<2> k2 = b2_perp.intersect(b1_perp_mirrored);
+  Point<2> k3 = b1_perp.intersect(b3_perp);
+  Point<2> k4 = b2_perp.intersect(b3_perp);
+  Point<2> k5 = b1_perp_mirrored.intersect(b3_perp_mirrored);
+  Point<2> k6 = b2_perp_mirrored.intersect(b3_perp_mirrored);
 
   // Get midpoints
   Point<2> b1_mid = b1_line.midpoint();

@@ -1,6 +1,6 @@
 #include "Geometry/Line.h"
 
-Point<2> Line::intercect(const Line& other) const {
+Point<2> Line::intersect(const Line& other) const {
   double x1 = p1_[0];
   double y1 = p1_[1];
   double x2 = p2_[0];

@@ -8,14 +8,14 @@ TEST_CASE("Line::intercect", "[Line]") {
   {
     Line line1(Point<2>{0, 0}, Point<2>{1, 1});
     Line line2(Point<2>{0, 1}, Point<2>{1, 0});
-    Point<2> intercect = line1.intercect(line2);
+    Point<2> intercect = line1.intersect(line2);
     REQUIRE(intercect == Point<2>{0.5, 0.5});
   }
 
   {
     Line line1(Point<2>{-2.22, -2.53}, Point<2>{5.04, 2.17});
     Line line2(Point<2>{-0.76, 4.99}, Point<2>{6.22, -1.85});
-    Point<2> intercect = line1.intercect(line2);
+    Point<2> intercect = line1.intersect(line2);
     REQUIRE_THAT(intercect[0], Catch::Matchers::WithinAbs(3.28, 0.01));
   }
 }
