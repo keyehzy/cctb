@@ -24,6 +24,17 @@ class NBuffer {
 
   const T& operator[](int index) const { return data_[index]; }
 
+  NBuffer clone() {
+    NBuffer<T> new_buffer(size_);
+    std::copy(data_, data_ + size_, new_buffer.data_);
+    return new_buffer;
+  }
+
+  void swap(NBuffer& other) {
+    std::swap(size_, other.size_);
+    std::swap(data_, other.data_);
+  }
+
  private:
   int size_;
   T* data_;
@@ -39,17 +50,62 @@ class NumericArray {
 
   ~NumericArray() {}
 
-  T& operator[](int index) { return buffer_[start_ + index * stride_]; }
+  T& operator[](int i) { return buffer_[i]; }
 
-  const T& operator[](int index) const { return buffer_[start_ + index * stride_]; }
+  const T& operator[](int i) const { return buffer_[i]; }
 
   int start() const { return start_; }
-
   int size() const { return size_; }
-
   int stride() const { return stride_; }
+  int bytes() const { return size_ * stride_ * sizeof(T); }
 
   NBuffer<T>& buffer() { return buffer_; }
+  const NBuffer<T>& buffer() const { return buffer_; }
+
+  NumericArray clone() { return NumericArray(start_, size_, stride_, buffer_.clone()); }
+
+  void swap(NumericArray& other) {
+    std::swap(start_, other.start_);
+    std::swap(size_, other.size_);
+    std::swap(stride_, other.stride_);
+    buffer_.swap(other.buffer_);
+  }
+
+  NumericArray reshape(int start, int size, int stride) {
+    return NumericArray(start, size, stride, buffer_);
+  }
+
+  NumericArray flatten() { return NumericArray(0, size_ * stride_, 1, buffer_); }
+
+  T dot(const NumericArray& other) const {
+    T result = 0;
+    for (int i = 0; i < size_; ++i) {
+      result += (*this)[i] * other[i];
+    }
+    return result;
+  }
+
+  T norm() const {
+    T result = 0;
+    for (int i = 0; i < size_; ++i) {
+      result += (*this)[i] * (*this)[i];
+    }
+    return std::sqrt(result);
+  }
+
+  T sum() const {
+    T result = 0;
+    for (int i = 0; i < size_; ++i) {
+      result += (*this)[i];
+    }
+    return result;
+  }
+
+  void scale(T alpha) {
+    for (int i = 0; i < size_; ++i) {
+      (*this)[i] *= alpha;
+    }
+  }
 
  protected:
   int start_;
@@ -76,6 +132,36 @@ ALWAYS_INLINE bool operator==(const NumericArray<T>& lhs, const NumericArray<T>&
     }
   }
   return true;
+}
+
+template <typename T>
+ALWAYS_INLINE T dot(const NumericArray<T>& x, const NumericArray<T>& y) {
+  T result = 0;
+  for (int i = 0; i < x.size(); ++i) {
+    result += x[i] * y[i];
+  }
+  return result;
+}
+
+template <typename T>
+ALWAYS_INLINE void scale(T alpha, NumericArray<T>& x) {
+  for (int i = 0; i < x.size(); ++i) {
+    x[i] *= alpha;
+  }
+}
+
+template <typename T>
+ALWAYS_INLINE T norm(const NumericArray<T>& x) {
+  return std::sqrt(dot(x, x));
+}
+
+template <typename T>
+ALWAYS_INLINE T sum(const NumericArray<T>& x) {
+  T result = 0;
+  for (int i = 0; i < x.size(); ++i) {
+    result += x[i];
+  }
+  return result;
 }
 
 template <typename T>
