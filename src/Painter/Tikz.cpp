@@ -47,7 +47,7 @@ class TikzPath : public TikzNode {
   std::vector<TikzPoint> points_;
 };
 
-std::string get_options(const std::vector<std::string>& options) {
+static std::string get_options(const std::vector<std::string>& options) {
   std::string options_str = "";
 
   if (!options.empty()) {
@@ -63,7 +63,7 @@ std::string get_options(const std::vector<std::string>& options) {
 
 class TikzDraw : public TikzNode {
  public:
-  TikzDraw(const TikzNode& node, std::vector<std::string> options)
+  TikzDraw(const TikzNode& node, const std::vector<std::string>& options)
       : node_(node), options_(options) {}
   virtual ~TikzDraw() = default;
 
