@@ -11,13 +11,18 @@
 #include "Painter/Painter.h"
 #include "cctb/matrix.h"
 
+template <std::size_t D>
 struct Edge {
-  std::vector<int> relative_index;
-  int from_index;
-  int to_index;
+  int dst;
+  std::array<int, D> offset;
   double weight;
-  Edge(std::vector<int> idx, int from, int to, double w = 1.0)
-      : relative_index(idx), from_index(from), to_index(to), weight(w) {}
+};
+
+template <std::size_t D>
+struct GraphNode {
+  Point<D> position;
+  std::vector<Edge<D>> edges;
+  GraphNode(Point<D> p) : position(p) {}
 };
 
 template <std::size_t D>
@@ -26,14 +31,19 @@ class Lattice {
   Lattice() {}
   virtual ~Lattice() {}
 
-  void AddSite(Point<D> site) { m_sites.push_back(site); }
-  void AddEdge(Edge edge) { m_edges.push_back(edge); }
+  void add_site(GraphNode<D> node) { m_nodes.push_back(node); }
 
-  std::vector<Point<D>> Sites() const { return m_sites; }
-  Point<D> SiteAt(int index) const { return m_sites[index]; }
+  void add_edge(int src, int dst, std::array<int, D> offset, double weight) {
+    m_nodes[src].edges.push_back({dst, offset, weight});
+  }
 
-  std::vector<Edge> Edges() const { return m_edges; }
-  int Size() const { return m_sites.size(); }
+  const std::vector<GraphNode<D>> &sites() const { return m_nodes; }
+
+  const GraphNode<D> &site(int i) const { return m_nodes[i]; }
+
+  GraphNode<D> &site(int i) { return m_nodes[i]; }
+
+  int size() const { return m_nodes.size(); }
 
   virtual void Plot(PainterBackend, std::ostream &) const = 0;
 
@@ -42,18 +52,19 @@ class Lattice {
   virtual Matrix<std::complex<double>> HoppingMatrix(Vector<D> k) const = 0;
 
  protected:
-  std::vector<Point<D>> m_sites;
-  std::vector<Edge> m_edges;
+  std::vector<GraphNode<D>> m_nodes;
 };
 
 template <std::size_t D>
 Matrix<int> Lattice<D>::AdjMatrix() const {
-  Matrix<int> hamiltonian(Size(), Size());
-  for (auto edge : Edges()) {
-    hamiltonian(edge.from_index, edge.to_index) = 1;
-    hamiltonian(edge.to_index, edge.from_index) = 1;
+  Matrix<int> A(m_nodes.size(), m_nodes.size());
+  for (int i = 0; i < m_nodes.size(); ++i) {
+    for (auto edge : m_nodes[i].edges) {
+      A(i, edge.dst) = 1;
+      A(edge.dst, i) = 1;
+    }
   }
-  return hamiltonian;
+  return A;
 }
 
 class OneDimensionalLattice : public Lattice<1> {

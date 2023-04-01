@@ -9,19 +9,14 @@ void OneDimensionalLattice::Plot(PainterBackend backend, std::ostream &out) cons
 
   plotter->Prepare();
 
-  for (const Point<1> &site : Sites()) {
+  for (const auto &site : sites()) {
     for (int i = -1; i <= 1; i++) {
-      Point<1> p = site.translated(i * m_a1);
+      Point<1> p = site.position.translated(i * m_a1);
       plotter->DrawPoint(p[0], 0.0);
-    }
-  }
-
-  for (const Edge &edge : Edges()) {
-    for (int i = -1; i <= 1; i++) {
-      Point<1> from_position = SiteAt(edge.from_index).translated(i * m_a1);
-      Point<1> to_position =
-          SiteAt(edge.to_index).translated(i * m_a1 + edge.relative_index[0] * m_a1);
-      plotter->DrawLine(from_position[0], 0.0, to_position[0], 0.0);
+      for (const auto &edge : site.edges) {
+        Point<1> to_position = this->site(edge.dst).position.translated(edge.offset[0] * m_a1);
+        plotter->DrawLine(p[0], 0.0, to_position[0], 0.0);
+      }
     }
   }
 
@@ -29,7 +24,7 @@ void OneDimensionalLattice::Plot(PainterBackend backend, std::ostream &out) cons
 }
 
 Matrix<std::complex<double>> OneDimensionalLattice::HoppingMatrix(Vector<1> k) const {
-  Matrix<std::complex<double>> hamiltonian(Size(), Size());
+  Matrix<std::complex<double>> hamiltonian(size(), size());
   for (auto edge : Edges()) {
     Point<1> from_position = SiteAt(edge.from_index);
     Point<1> to_position = SiteAt(edge.to_index).translated(edge.relative_index[0] * m_a1);
