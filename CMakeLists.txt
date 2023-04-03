@@ -11,6 +11,12 @@ include(extra_compile_options)
 
 find_package(BLAS)
 
+if (BLAS_FOUND)
+  add_definitions(-DHAVE_BLAS)
+else()
+  message(WARNING "BLAS not found")
+endif()
+
 add_subdirectory(src)
 add_subdirectory(third-party)
 

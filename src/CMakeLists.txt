@@ -12,4 +12,9 @@ add_library(
     LinearAlgebra/Matrix.cpp
 )
 target_include_directories(cctb-lib PUBLIC .)
-target_link_libraries(cctb-lib PRIVATE -lm)
+
+if (BLAS_FOUND)
+  target_link_libraries(cctb-lib PRIVATE ${BLAS_LIBRARIES})
+else()
+  target_link_libraries(cctb-lib PRIVATE -lm)
+endif()
