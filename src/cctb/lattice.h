@@ -22,6 +22,9 @@ template <std::size_t D>
 struct GraphNode {
   Point<D> position;
   std::vector<Edge<D>> edges;
+  int size() const { return edges.size(); }
+  const Edge<D> &edge(int i) const { return edges[i]; }
+  Edge<D> &edge(int i) { return edges[i]; }
   GraphNode(Point<D> p) : position(p) {}
 };
 

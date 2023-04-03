@@ -32,28 +32,29 @@ class LinearChainTest : public OneDimensionalLattice {
  public:
   LinearChainTest(int size) : OneDimensionalLattice(Vector<1>(1.0 * size)) {
     for (int i = 0; i < size; i++) {
-      AddSite(Point<1>(i));
+      add_site(Point<1>(i));
     }
     for (int i = 0; i < size - 1; i++) {
-      AddEdge(Edge({0}, i, i + 1));
+      add_edge(i, i + 1, {0}, 1.0);
     }
     // if periodic, add the last edge
-    AddEdge(Edge({1}, size - 1, 0));
+    add_edge(size - 1, 0, {1}, 1.0);
   }
 };
 
 TEST_CASE("LinearChain", "[lattice]") {
   LinearChainTest lattice(2);
-  REQUIRE(lattice.Size() == 2);
-  REQUIRE(lattice.SiteAt(0) == Point<1>(0));
-  REQUIRE(lattice.SiteAt(1) == Point<1>(1));
-  REQUIRE(lattice.Edges().size() == 2);
-  REQUIRE(lattice.Edges()[0].relative_index == std::vector<int>{0});
-  REQUIRE(lattice.Edges()[1].relative_index == std::vector<int>{1});
-  REQUIRE(lattice.Edges()[0].from_index == 0);
-  REQUIRE(lattice.Edges()[0].to_index == 1);
-  REQUIRE(lattice.Edges()[1].from_index == 1);
-  REQUIRE(lattice.Edges()[1].to_index == 0);
+  REQUIRE(lattice.size() == 2);
+  REQUIRE(lattice.site(0).position == Point<1>(0));
+  REQUIRE(lattice.site(0).size() == 1);
+  REQUIRE(lattice.site(0).edge(0).dst == 1);
+  REQUIRE(lattice.site(0).edge(0).offset == std::array<int, 1>{0});
+  REQUIRE(lattice.site(0).edge(0).weight == 1.0);
+  REQUIRE(lattice.site(1).position == Point<1>(1));
+  REQUIRE(lattice.site(1).size() == 1);
+  REQUIRE(lattice.site(1).edge(0).dst == 0);
+  REQUIRE(lattice.site(1).edge(0).offset == std::array<int, 1>{1});
+  REQUIRE(lattice.site(1).edge(0).weight == 1.0);
 
   Matrix<int> adj_matrix = lattice.AdjMatrix();
   REQUIRE(adj_matrix.rows == 2);
@@ -75,23 +76,24 @@ TEST_CASE("LinearChain", "[lattice]") {
 class SquareLatticeTest : public TwoDimensionalLattice {
  public:
   SquareLatticeTest() : TwoDimensionalLattice(Vector<2>{1.0, 0}, Vector<2>(0, 1.0)) {
-    AddSite(Point<2>(0, 0));
-    AddEdge(Edge({0, 1}, 0, 0));
-    AddEdge(Edge({1, 0}, 0, 0));
+    add_site(Point<2>(0, 0));
+    add_edge(0, 0, {0, 1}, 1.0);
+    add_edge(0, 0, {1, 0}, 1.0);
   }
 };
 
 TEST_CASE("SquareLattice", "[lattice]") {
   SquareLatticeTest lattice;
-  REQUIRE(lattice.Size() == 1);
-  REQUIRE(lattice.SiteAt(0) == Point<2>(0, 0));
-  REQUIRE(lattice.Edges().size() == 2);
-  REQUIRE(lattice.Edges()[0].relative_index == std::vector<int>{0, 1});
-  REQUIRE(lattice.Edges()[1].relative_index == std::vector<int>{1, 0});
-  REQUIRE(lattice.Edges()[0].from_index == 0);
-  REQUIRE(lattice.Edges()[0].to_index == 0);
-  REQUIRE(lattice.Edges()[1].from_index == 0);
-  REQUIRE(lattice.Edges()[1].to_index == 0);
+  REQUIRE(lattice.size() == 1);
+
+  REQUIRE(lattice.site(0).position == Point<2>(0, 0));
+  REQUIRE(lattice.site(0).size() == 2);
+  REQUIRE(lattice.site(0).edge(0).dst == 0);
+  REQUIRE(lattice.site(0).edge(0).offset == std::array<int, 2>{0, 1});
+  REQUIRE(lattice.site(0).edge(0).weight == 1.0);
+  REQUIRE(lattice.site(0).edge(1).dst == 0);
+  REQUIRE(lattice.site(0).edge(1).offset == std::array<int, 2>{1, 0});
+  REQUIRE(lattice.site(0).edge(1).weight == 1.0);
 
   Matrix<int> adj_matrix = lattice.AdjMatrix();
   REQUIRE(adj_matrix.rows == 1);
@@ -108,34 +110,36 @@ class GrapheneLatticeTest : public TwoDimensionalLattice {
  public:
   GrapheneLatticeTest()
       : TwoDimensionalLattice(Vector<2>(1.5, 0.5 * sqrt(3.0)), Vector<2>(1.5, -0.5 * sqrt(3.0))) {
-    AddSite(Point<2>{0, 0});
-    AddSite(Point<2>{0.5, 0.5 * sqrt(3.0)});
-    AddEdge(Edge({0, 0}, 0, 1));
-    AddEdge(Edge({1, 0}, 1, 0));
-    AddEdge(Edge({1, -1}, 1, 0));
+    add_site(Point<2>{0, 0});
+    add_site(Point<2>{0.5, 0.5 * sqrt(3.0)});
+    add_edge(0, 1, {0, 0}, 1.0);
+    add_edge(1, 0, {1, 0}, 1.0);
+    add_edge(1, 0, {1, -1}, 1.0);
   }
 };
 
 TEST_CASE("GrapheneLattice", "[lattice]") {
   GrapheneLatticeTest lattice;
-  REQUIRE(lattice.Size() == 2);
   REQUIRE(lattice.a1() == Vector<2>(1.5, 0.5 * sqrt(3.0)));
   REQUIRE(lattice.a2() == Vector<2>(1.5, -0.5 * sqrt(3.0)));
   REQUIRE_THAT(lattice.b1(), ApproxEqualVec(Vector<2>(2.0 * M_PI / 3.0, 2.0 * M_PI / sqrt(3.0))));
   REQUIRE_THAT(lattice.b2(), ApproxEqualVec(Vector<2>(2.0 * M_PI / 3.0, -2.0 * M_PI / sqrt(3.0))));
 
-  REQUIRE(lattice.SiteAt(0) == Point<2>{0, 0});
-  REQUIRE(lattice.SiteAt(1) == Point<2>{0.5, 0.5 * sqrt(3.0)});
-  REQUIRE(lattice.Edges().size() == 3);
-  REQUIRE(lattice.Edges()[0].relative_index == std::vector<int>{0, 0});
-  REQUIRE(lattice.Edges()[1].relative_index == std::vector<int>{1, 0});
-  REQUIRE(lattice.Edges()[2].relative_index == std::vector<int>{1, -1});
-  REQUIRE(lattice.Edges()[0].from_index == 0);
-  REQUIRE(lattice.Edges()[0].to_index == 1);
-  REQUIRE(lattice.Edges()[1].from_index == 1);
-  REQUIRE(lattice.Edges()[1].to_index == 0);
-  REQUIRE(lattice.Edges()[2].from_index == 1);
-  REQUIRE(lattice.Edges()[2].to_index == 0);
+  REQUIRE(lattice.size() == 2);
+
+  REQUIRE(lattice.site(0).position == Point<2>{0, 0});
+  REQUIRE(lattice.site(0).size() == 1);
+  REQUIRE(lattice.site(0).edge(0).dst == 1);
+  REQUIRE(lattice.site(0).edge(0).offset == std::array<int, 2>{0, 0});
+  REQUIRE(lattice.site(0).edge(0).weight == 1.0);
+
+  REQUIRE(lattice.site(1).position == Point<2>{0.5, 0.5 * sqrt(3.0)});
+  REQUIRE(lattice.site(1).size() == 2);
+  REQUIRE(lattice.site(1).edge(0).dst == 0);
+  REQUIRE(lattice.site(1).edge(0).offset == std::array<int, 2>{1, 0});
+  REQUIRE(lattice.site(1).edge(0).weight == 1.0);
+  REQUIRE(lattice.site(1).edge(1).dst == 0);
+  REQUIRE(lattice.site(1).edge(1).offset == std::array<int, 2>{1, -1});
 
   Matrix<int> adj_matrix = lattice.AdjMatrix();
   REQUIRE(adj_matrix.rows == 2);
@@ -166,46 +170,54 @@ class GrapheneLatticeExtendedTest : public TwoDimensionalLattice {
  public:
   GrapheneLatticeExtendedTest()
       : TwoDimensionalLattice(Vector<2>(3.0, 0), Vector<2>(0, sqrt(3.0))) {
-    AddSite(Point<2>{0, 0});
-    AddSite(Point<2>{0.5, 0.5 * sqrt(3.0)});
-    AddSite(Point<2>{1.5, 0.5 * sqrt(3.0)});
-    AddSite(Point<2>{2.0, 0});
-    AddEdge(Edge({0, 0}, 0, 1));
-    AddEdge(Edge({0, 0}, 1, 2));
-    AddEdge(Edge({0, 0}, 2, 3));
+    add_site(Point<2>{0, 0});
+    add_site(Point<2>{0.5, 0.5 * sqrt(3.0)});
+    add_site(Point<2>{1.5, 0.5 * sqrt(3.0)});
+    add_site(Point<2>{2.0, 0});
 
-    AddEdge(Edge({1, 0}, 3, 0));
-    AddEdge(Edge({0, 1}, 1, 0));
-    AddEdge(Edge({0, 1}, 2, 3));
+    add_edge(0, 1, {0, 0}, 1.0);
+    add_edge(1, 2, {0, 0}, 1.0);
+    add_edge(2, 3, {0, 0}, 1.0);
+
+    add_edge(3, 0, {1, 0}, 1.0);
+    add_edge(1, 0, {0, 1}, 1.0);
+    add_edge(2, 3, {0, 1}, 1.0);
   };
 };
 
 TEST_CASE("GrapheneLatticeExtended", "[lattice]") {
   GrapheneLatticeExtendedTest lattice;
-  REQUIRE(lattice.Size() == 4);
-  REQUIRE(lattice.SiteAt(0) == Point<2>{0, 0});
-  REQUIRE(lattice.SiteAt(1) == Point<2>{0.5, 0.5 * sqrt(3.0)});
-  REQUIRE(lattice.SiteAt(2) == Point<2>{1.5, 0.5 * sqrt(3.0)});
-  REQUIRE(lattice.SiteAt(3) == Point<2>{2.0, 0});
-  REQUIRE(lattice.Edges().size() == 6);
-  REQUIRE(lattice.Edges()[0].relative_index == std::vector<int>{0, 0});
-  REQUIRE(lattice.Edges()[1].relative_index == std::vector<int>{0, 0});
-  REQUIRE(lattice.Edges()[2].relative_index == std::vector<int>{0, 0});
-  REQUIRE(lattice.Edges()[3].relative_index == std::vector<int>{1, 0});
-  REQUIRE(lattice.Edges()[4].relative_index == std::vector<int>{0, 1});
-  REQUIRE(lattice.Edges()[5].relative_index == std::vector<int>{0, 1});
-  REQUIRE(lattice.Edges()[0].from_index == 0);
-  REQUIRE(lattice.Edges()[0].to_index == 1);
-  REQUIRE(lattice.Edges()[1].from_index == 1);
-  REQUIRE(lattice.Edges()[1].to_index == 2);
-  REQUIRE(lattice.Edges()[2].from_index == 2);
-  REQUIRE(lattice.Edges()[2].to_index == 3);
-  REQUIRE(lattice.Edges()[3].from_index == 3);
-  REQUIRE(lattice.Edges()[3].to_index == 0);
-  REQUIRE(lattice.Edges()[4].from_index == 1);
-  REQUIRE(lattice.Edges()[4].to_index == 0);
-  REQUIRE(lattice.Edges()[5].from_index == 2);
-  REQUIRE(lattice.Edges()[5].to_index == 3);
+  REQUIRE(lattice.size() == 4);
+
+  REQUIRE(lattice.site(0).position == Point<2>{0, 0});
+  REQUIRE(lattice.site(0).size() == 1);
+  REQUIRE(lattice.site(0).edge(0).dst == 1);
+  REQUIRE(lattice.site(0).edge(0).offset == std::array<int, 2>{0, 0});
+  REQUIRE(lattice.site(0).edge(0).weight == 1.0);
+
+  REQUIRE(lattice.site(1).position == Point<2>{0.5, 0.5 * sqrt(3.0)});
+  REQUIRE(lattice.site(1).size() == 2);
+  REQUIRE(lattice.site(1).edge(0).dst == 2);
+  REQUIRE(lattice.site(1).edge(0).offset == std::array<int, 2>{0, 0});
+  REQUIRE(lattice.site(1).edge(0).weight == 1.0);
+  REQUIRE(lattice.site(1).edge(1).dst == 0);
+  REQUIRE(lattice.site(1).edge(1).offset == std::array<int, 2>{0, 1});
+  REQUIRE(lattice.site(1).edge(1).weight == 1.0);
+
+  REQUIRE(lattice.site(2).position == Point<2>{1.5, 0.5 * sqrt(3.0)});
+  REQUIRE(lattice.site(2).size() == 2);
+  REQUIRE(lattice.site(2).edge(0).dst == 3);
+  REQUIRE(lattice.site(2).edge(0).offset == std::array<int, 2>{0, 0});
+  REQUIRE(lattice.site(2).edge(0).weight == 1.0);
+  REQUIRE(lattice.site(2).edge(1).dst == 3);
+  REQUIRE(lattice.site(2).edge(1).offset == std::array<int, 2>{0, 1});
+  REQUIRE(lattice.site(2).edge(1).weight == 1.0);
+
+  REQUIRE(lattice.site(3).position == Point<2>{2.0, 0});
+  REQUIRE(lattice.site(3).size() == 1);
+  REQUIRE(lattice.site(3).edge(0).dst == 0);
+  REQUIRE(lattice.site(3).edge(0).offset == std::array<int, 2>{1, 0});
+  REQUIRE(lattice.site(3).edge(0).weight == 1.0);
 
   Matrix<int> adj_matrix = lattice.AdjMatrix();
   REQUIRE(adj_matrix.rows == 4);
@@ -232,27 +244,28 @@ class TriangularLatticeTest : public TwoDimensionalLattice {
  public:
   TriangularLatticeTest(double a = 1.0)
       : TwoDimensionalLattice(Vector<2>(a, 0), Vector<2>(0.5 * a, 0.5 * a * sqrt(3.0))) {
-    AddSite(Point<2>{0, 0});
-    AddEdge(Edge({1, 0}, 0, 0));
-    AddEdge(Edge({0, 1}, 0, 0));
-    AddEdge(Edge({1, -1}, 0, 0));
+    add_site(Point<2>{0, 0});
+    add_edge(0, 0, {1, 0}, 1.0);
+    add_edge(0, 0, {0, 1}, 1.0);
+    add_edge(0, 0, {1, -1}, 1.0);
   }
 };
 
 TEST_CASE("TriangularLattice", "[lattice]") {
   TriangularLatticeTest lattice;
-  REQUIRE(lattice.Size() == 1);
-  REQUIRE(lattice.SiteAt(0) == Point<2>{0, 0});
-  REQUIRE(lattice.Edges().size() == 3);
-  REQUIRE(lattice.Edges()[0].relative_index == std::vector<int>{1, 0});
-  REQUIRE(lattice.Edges()[1].relative_index == std::vector<int>{0, 1});
-  REQUIRE(lattice.Edges()[2].relative_index == std::vector<int>{1, -1});
-  REQUIRE(lattice.Edges()[0].from_index == 0);
-  REQUIRE(lattice.Edges()[0].to_index == 0);
-  REQUIRE(lattice.Edges()[1].from_index == 0);
-  REQUIRE(lattice.Edges()[1].to_index == 0);
-  REQUIRE(lattice.Edges()[2].from_index == 0);
-  REQUIRE(lattice.Edges()[2].to_index == 0);
+  REQUIRE(lattice.size() == 1);
+
+  REQUIRE(lattice.site(0).position == Point<2>{0, 0});
+  REQUIRE(lattice.site(0).size() == 3);
+  REQUIRE(lattice.site(0).edge(0).dst == 0);
+  REQUIRE(lattice.site(0).edge(0).offset == std::array<int, 2>{1, 0});
+  REQUIRE(lattice.site(0).edge(0).weight == 1.0);
+  REQUIRE(lattice.site(0).edge(1).dst == 0);
+  REQUIRE(lattice.site(0).edge(1).offset == std::array<int, 2>{0, 1});
+  REQUIRE(lattice.site(0).edge(1).weight == 1.0);
+  REQUIRE(lattice.site(0).edge(2).dst == 0);
+  REQUIRE(lattice.site(0).edge(2).offset == std::array<int, 2>{1, -1});
+  REQUIRE(lattice.site(0).edge(2).weight == 1.0);
 
   Matrix<int> adj_matrix = lattice.AdjMatrix();
   REQUIRE(adj_matrix.rows == 1);
@@ -263,43 +276,48 @@ TEST_CASE("TriangularLattice", "[lattice]") {
 class KagomeLatticeTest : public TwoDimensionalLattice {
  public:
   KagomeLatticeTest() : TwoDimensionalLattice(Vector<2>(2, 0), Vector<2>(1.0, sqrt(3.0))) {
-    AddSite(Point<2>{0, 0});
-    AddSite(Point<2>{1.0, 0});
-    AddSite(Point<2>{0.5, 0.5 * sqrt(3.0)});
-    AddEdge(Edge({0, 0}, 0, 1));
-    AddEdge(Edge({0, 0}, 1, 2));
-    AddEdge(Edge({0, 0}, 2, 0));
-    AddEdge(Edge({1, 0}, 1, 0));
-    AddEdge(Edge({0, 1}, 2, 0));
-    AddEdge(Edge({1, -1}, 1, 2));
+    add_site(Point<2>{0, 0});
+    add_site(Point<2>{1.0, 0});
+    add_site(Point<2>{0.5, 0.5 * sqrt(3.0)});
+    add_edge(0, 1, {0, 0}, 1.0);
+    add_edge(1, 2, {0, 0}, 1.0);
+    add_edge(2, 0, {0, 0}, 1.0);
+    add_edge(1, 0, {1, 0}, 1.0);
+    add_edge(2, 0, {0, 1}, 1.0);
+    add_edge(1, 2, {1, -1}, 1.0);
   }
 };
 
 TEST_CASE("KagomeLattice", "[lattice]") {
   KagomeLatticeTest lattice;
-  REQUIRE(lattice.Size() == 3);
-  REQUIRE(lattice.SiteAt(0) == Point<2>{0, 0});
-  REQUIRE(lattice.SiteAt(1) == Point<2>{1.0, 0});
-  REQUIRE(lattice.SiteAt(2) == Point<2>{0.5, 0.5 * sqrt(3.0)});
-  REQUIRE(lattice.Edges().size() == 6);
-  REQUIRE(lattice.Edges()[0].relative_index == std::vector<int>{0, 0});
-  REQUIRE(lattice.Edges()[1].relative_index == std::vector<int>{0, 0});
-  REQUIRE(lattice.Edges()[2].relative_index == std::vector<int>{0, 0});
-  REQUIRE(lattice.Edges()[3].relative_index == std::vector<int>{1, 0});
-  REQUIRE(lattice.Edges()[4].relative_index == std::vector<int>{0, 1});
-  REQUIRE(lattice.Edges()[5].relative_index == std::vector<int>{1, -1});
-  REQUIRE(lattice.Edges()[0].from_index == 0);
-  REQUIRE(lattice.Edges()[0].to_index == 1);
-  REQUIRE(lattice.Edges()[1].from_index == 1);
-  REQUIRE(lattice.Edges()[1].to_index == 2);
-  REQUIRE(lattice.Edges()[2].from_index == 2);
-  REQUIRE(lattice.Edges()[2].to_index == 0);
-  REQUIRE(lattice.Edges()[3].from_index == 1);
-  REQUIRE(lattice.Edges()[3].to_index == 0);
-  REQUIRE(lattice.Edges()[4].from_index == 2);
-  REQUIRE(lattice.Edges()[4].to_index == 0);
-  REQUIRE(lattice.Edges()[5].from_index == 1);
-  REQUIRE(lattice.Edges()[5].to_index == 2);
+  REQUIRE(lattice.size() == 3);
+
+  REQUIRE(lattice.site(0).position == Point<2>{0, 0});
+  REQUIRE(lattice.site(0).size() == 1);
+  REQUIRE(lattice.site(0).edge(0).dst == 1);
+  REQUIRE(lattice.site(0).edge(0).offset == std::array<int, 2>{0, 0});
+  REQUIRE(lattice.site(0).edge(0).weight == 1.0);
+
+  REQUIRE(lattice.site(1).position == Point<2>{1.0, 0});
+  REQUIRE(lattice.site(1).size() == 3);
+  REQUIRE(lattice.site(1).edge(0).dst == 2);
+  REQUIRE(lattice.site(1).edge(0).offset == std::array<int, 2>{0, 0});
+  REQUIRE(lattice.site(1).edge(0).weight == 1.0);
+  REQUIRE(lattice.site(1).edge(1).dst == 0);
+  REQUIRE(lattice.site(1).edge(1).offset == std::array<int, 2>{1, 0});
+  REQUIRE(lattice.site(1).edge(1).weight == 1.0);
+  REQUIRE(lattice.site(1).edge(2).dst == 2);
+  REQUIRE(lattice.site(1).edge(2).offset == std::array<int, 2>{1, -1});
+  REQUIRE(lattice.site(1).edge(2).weight == 1.0);
+
+  REQUIRE(lattice.site(2).position == Point<2>{0.5, 0.5 * sqrt(3.0)});
+  REQUIRE(lattice.site(2).size() == 2);
+  REQUIRE(lattice.site(2).edge(0).dst == 0);
+  REQUIRE(lattice.site(2).edge(0).offset == std::array<int, 2>{0, 0});
+  REQUIRE(lattice.site(2).edge(0).weight == 1.0);
+  REQUIRE(lattice.site(2).edge(1).dst == 0);
+  REQUIRE(lattice.site(2).edge(1).offset == std::array<int, 2>{0, 1});
+  REQUIRE(lattice.site(2).edge(1).weight == 1.0);
 
   Matrix<int> adj_matrix = lattice.AdjMatrix();
   REQUIRE(adj_matrix.rows == 3);

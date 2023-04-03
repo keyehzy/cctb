@@ -6,9 +6,7 @@
 
 void OneDimensionalLattice::Plot(PainterBackend backend, std::ostream &out) const {
   auto plotter = PainterFactory::create(backend, out);
-
   plotter->Prepare();
-
   for (const auto &site : sites()) {
     for (int i = -1; i <= 1; i++) {
       Point<1> p = site.position.translated(i * m_a1);
@@ -19,55 +17,52 @@ void OneDimensionalLattice::Plot(PainterBackend backend, std::ostream &out) cons
       }
     }
   }
-
   plotter->Finish();
 }
 
 Matrix<std::complex<double>> OneDimensionalLattice::HoppingMatrix(Vector<1> k) const {
-  Matrix<std::complex<double>> hamiltonian(size(), size());
-  for (auto edge : Edges()) {
-    Point<1> from_position = SiteAt(edge.from_index);
-    Point<1> to_position = SiteAt(edge.to_index).translated(edge.relative_index[0] * m_a1);
-    Vector<1> r(from_position, to_position);
-    double dot = k.dot(r);
-    std::complex<double> phase = std::complex<double>(0, dot);
-    hamiltonian(edge.from_index, edge.to_index) += edge.weight * std::exp(phase);
-    hamiltonian(edge.to_index, edge.from_index) += edge.weight * std::exp(-phase);
+  Matrix<std::complex<double>> H(size(), size());
+  for (int src = 0; src < size(); src++) {
+    for (const auto &edge : site(src).edges) {
+      Point<1> to_position = site(edge.dst).position.translated(edge.offset[0] * m_a1);
+      Vector<1> r(site(src).position, to_position);
+      double dot = k.dot(r);
+      std::complex<double> phase = std::complex<double>(0, dot);
+      H(src, edge.dst) += edge.weight * std::exp(phase);
+      H(edge.dst, src) += edge.weight * std::exp(-phase);
+    }
   }
-  return hamiltonian;
+  return H;
 }
 
 void TwoDimensionalLattice::Plot(PainterBackend backend, std::ostream &out) const {
   auto plotter = PainterFactory::create(backend, out);
   plotter->Prepare();
-
-  for (const Point<2> &site : Sites()) {
+  for (const auto &site : sites()) {
     for (int i = -1; i <= 1; i++) {
       for (int j = -1; j <= 1; j++) {
         Vector<2> offset = m_a1 * i + m_a2 * j;
-        Point<2> p = site.translated(offset);
+        Point<2> p = site.position.translated(offset);
         plotter->DrawPoint(p[0], p[1]);
       }
     }
   }
-
-  for (const Edge &edge : Edges()) {
-    for (int i = -1; i <= 1; i++) {
-      for (int j = -1; j <= 1; j++) {
-        Point<2> from_position = SiteAt(edge.from_index).translated(m_a1 * i + m_a2 * j);
-        Point<2> to_position = SiteAt(edge.to_index)
-                                   .translated(m_a1 * i + m_a2 * j + m_a1 * edge.relative_index[0] +
-                                               m_a2 * edge.relative_index[1]);
-        plotter->DrawLine(from_position[0], from_position[1], to_position[0], to_position[1]);
+  for (int src = 0; src < size(); src++) {
+    for (const auto &edge : site(src).edges) {
+      for (int i = -1; i <= 1; i++) {
+        for (int j = -1; j <= 1; j++) {
+          Point<2> from_position = site(src).position.translated(m_a1 * i + m_a2 * j);
+          Point<2> to_position = site(edge.dst).position.translated(
+              m_a1 * i + m_a2 * j + m_a1 * edge.offset[0] + m_a2 * edge.offset[1]);
+          plotter->DrawLine(from_position[0], from_position[1], to_position[0], to_position[1]);
+        }
       }
     }
   }
-
   plotter->DrawText(m_a1[0] / 2, m_a1[1] / 2 + 0.25, "$a_1$");
   plotter->DrawArrow(0, 0, m_a1[0], m_a1[1]);
   plotter->DrawText(m_a2[0] / 2, m_a2[1] / 2 - 0.25, "$a_2$");
   plotter->DrawArrow(0, 0, m_a2[0], m_a2[1]);
-
   plotter->Finish();
 }
 
@@ -140,17 +135,17 @@ void TwoDimensionalLattice::PlotBrillouinZone(PainterBackend backend, std::ostre
 }
 
 Matrix<std::complex<double>> TwoDimensionalLattice::HoppingMatrix(Vector<2> k) const {
-  Matrix<std::complex<double>> hamiltonian(Size(), Size());
-  for (auto edge : Edges()) {
-    Point<2> from_position = SiteAt(edge.from_index);
-    Point<2> to_position =
-        SiteAt(edge.to_index)
-            .translated(m_a1 * edge.relative_index[0] + m_a2 * edge.relative_index[1]);
-    Vector<2> r(from_position, to_position);
-    double dot = k.dot(r);
-    std::complex<double> phase = std::complex<double>(0, dot);
-    hamiltonian(edge.from_index, edge.to_index) += edge.weight * std::exp(phase);
-    hamiltonian(edge.to_index, edge.from_index) += edge.weight * std::exp(-phase);
+  Matrix<std::complex<double>> H(size(), size());
+  for (int src = 0; src < size(); src++) {
+    for (const auto &edge : site(src).edges) {
+      Point<2> to_position =
+          site(edge.dst).position.translated(m_a1 * edge.offset[0] + m_a2 * edge.offset[1]);
+      Vector<2> r(site(src).position, to_position);
+      double dot = k.dot(r);
+      std::complex<double> phase = std::complex<double>(0, dot);
+      H(src, edge.dst) += edge.weight * std::exp(phase);
+      H(edge.dst, src) += edge.weight * std::exp(-phase);
+    }
   }
-  return hamiltonian;
+  return H;
 }
