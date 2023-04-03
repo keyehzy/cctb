@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <cstring>
 
 #define ALWAYS_INLINE inline __attribute__((always_inline))
 
@@ -10,9 +11,6 @@ class NBuffer {
  public:
   NBuffer(int size)
       : size_(size), data_(static_cast<T*>(std::aligned_alloc(32, size * sizeof(T)))) {}
-
-  NBuffer(const NBuffer& other) = delete;
-  NBuffer& operator=(const NBuffer& other) = delete;
 
   ~NBuffer() { std::free(data_); }
 
@@ -35,6 +33,10 @@ class NBuffer {
     std::swap(data_, other.data_);
   }
 
+  void zeros() { std::memset(data_, 0, size_ * sizeof(T)); }
+
+  void fill(T value) { std::fill(data_, data_ + size_, value); }
+
  private:
   int size_;
   T* data_;
@@ -45,8 +47,6 @@ class NumericArray {
  public:
   NumericArray(int size);
   NumericArray(int start, int size, int stride);
-  NumericArray(const NumericArray& other) = delete;
-  NumericArray& operator=(const NumericArray& other) = delete;
 
   ~NumericArray() {}
 
@@ -57,6 +57,7 @@ class NumericArray {
   int start() const { return start_; }
   int size() const { return size_; }
   int stride() const { return stride_; }
+  int nelms() const { return size_ * stride_; }
   int bytes() const { return size_ * stride_ * sizeof(T); }
 
   NBuffer<T>& buffer() { return buffer_; }
@@ -79,7 +80,7 @@ class NumericArray {
 
   T dot(const NumericArray& other) const {
     T result = 0;
-    for (int i = 0; i < size_; ++i) {
+    for (int i = 0; i < nelms(); ++i) {
       result += (*this)[i] * other[i];
     }
     return result;
@@ -87,7 +88,7 @@ class NumericArray {
 
   T norm() const {
     T result = 0;
-    for (int i = 0; i < size_; ++i) {
+    for (int i = 0; i < nelms(); ++i) {
       result += (*this)[i] * (*this)[i];
     }
     return std::sqrt(result);
@@ -95,14 +96,14 @@ class NumericArray {
 
   T sum() const {
     T result = 0;
-    for (int i = 0; i < size_; ++i) {
+    for (int i = 0; i < nelms(); ++i) {
       result += (*this)[i];
     }
     return result;
   }
 
   void scale(T alpha) {
-    for (int i = 0; i < size_; ++i) {
+    for (int i = 0; i < nelms(); ++i) {
       (*this)[i] *= alpha;
     }
   }

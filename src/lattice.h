@@ -8,8 +8,8 @@
 
 #include "Geometry/Point.h"
 #include "Geometry/Vector.h"
+#include "LinearAlgebra/Matrix.h"
 #include "Painter/Painter.h"
-#include "cctb/matrix.h"
 
 template <std::size_t D>
 struct Edge {
@@ -61,6 +61,7 @@ class Lattice {
 template <std::size_t D>
 Matrix<int> Lattice<D>::AdjMatrix() const {
   Matrix<int> A(m_nodes.size(), m_nodes.size());
+  A.buffer().zeros();
   for (int i = 0; i < m_nodes.size(); ++i) {
     for (auto edge : m_nodes[i].edges) {
       A(i, edge.dst) = 1;

@@ -3,7 +3,7 @@
 #include <complex>
 
 #include "Geometry/Point.h"
-#include "cctb/lattice.h"
+#include "lattice.h"
 
 template <std::size_t D>
 struct ApproxEqualVec : Catch::Matchers::MatcherGenericBase {
@@ -57,16 +57,16 @@ TEST_CASE("LinearChain", "[lattice]") {
   REQUIRE(lattice.site(1).edge(0).weight == 1.0);
 
   Matrix<int> adj_matrix = lattice.AdjMatrix();
-  REQUIRE(adj_matrix.rows == 2);
-  REQUIRE(adj_matrix.cols == 2);
+  REQUIRE(adj_matrix.rows() == 2);
+  REQUIRE(adj_matrix.cols() == 2);
   REQUIRE(adj_matrix(0, 0) == 0);
   REQUIRE(adj_matrix(0, 1) == 1);
   REQUIRE(adj_matrix(1, 0) == 1);
   REQUIRE(adj_matrix(1, 1) == 0);
 
   Matrix<std::complex<double>> hopping_matrix = lattice.HoppingMatrix(0.5);
-  REQUIRE(hopping_matrix.rows == 2);
-  REQUIRE(hopping_matrix.cols == 2);
+  REQUIRE(hopping_matrix.rows() == 2);
+  REQUIRE(hopping_matrix.cols() == 2);
   REQUIRE(hopping_matrix(0, 0) == std::complex<double>(0, 0));
   REQUIRE(hopping_matrix(0, 1) == std::complex<double>(2.0 * cos(0.5), 0));
   REQUIRE(hopping_matrix(1, 0) == std::complex<double>(2.0 * cos(0.5), 0));
@@ -96,13 +96,13 @@ TEST_CASE("SquareLattice", "[lattice]") {
   REQUIRE(lattice.site(0).edge(1).weight == 1.0);
 
   Matrix<int> adj_matrix = lattice.AdjMatrix();
-  REQUIRE(adj_matrix.rows == 1);
-  REQUIRE(adj_matrix.cols == 1);
+  REQUIRE(adj_matrix.rows() == 1);
+  REQUIRE(adj_matrix.cols() == 1);
   REQUIRE(adj_matrix(0, 0) == 1);
 
   Matrix<std::complex<double>> hopping_matrix = lattice.HoppingMatrix(Vector<2>{0.5, 0.8});
-  REQUIRE(hopping_matrix.rows == 1);
-  REQUIRE(hopping_matrix.cols == 1);
+  REQUIRE(hopping_matrix.rows() == 1);
+  REQUIRE(hopping_matrix.cols() == 1);
   REQUIRE(hopping_matrix(0, 0) == std::complex<double>(2.0 * cos(0.5) + 2.0 * cos(0.8), 0));
 }
 
@@ -142,8 +142,8 @@ TEST_CASE("GrapheneLattice", "[lattice]") {
   REQUIRE(lattice.site(1).edge(1).offset == std::array<int, 2>{1, -1});
 
   Matrix<int> adj_matrix = lattice.AdjMatrix();
-  REQUIRE(adj_matrix.rows == 2);
-  REQUIRE(adj_matrix.cols == 2);
+  REQUIRE(adj_matrix.rows() == 2);
+  REQUIRE(adj_matrix.cols() == 2);
   REQUIRE(adj_matrix(0, 0) == 0);
   REQUIRE(adj_matrix(0, 1) == 1);
   REQUIRE(adj_matrix(1, 0) == 1);
@@ -156,8 +156,8 @@ TEST_CASE("GrapheneLattice", "[lattice]") {
   std::complex<double> comp = std::complex<double>(0.0, 1.0);
 
   Matrix<std::complex<double>> hopping_matrix = lattice.HoppingMatrix(k);
-  REQUIRE(hopping_matrix.rows == 2);
-  REQUIRE(hopping_matrix.cols == 2);
+  REQUIRE(hopping_matrix.rows() == 2);
+  REQUIRE(hopping_matrix.cols() == 2);
   REQUIRE(hopping_matrix(0, 0) == std::complex<double>(0, 0));
   REQUIRE(hopping_matrix(0, 1) ==
           std::exp(comp * k.dot(d1)) + std::exp(comp * k.dot(d2)) + std::exp(comp * k.dot(d3)));
@@ -220,8 +220,8 @@ TEST_CASE("GrapheneLatticeExtended", "[lattice]") {
   REQUIRE(lattice.site(3).edge(0).weight == 1.0);
 
   Matrix<int> adj_matrix = lattice.AdjMatrix();
-  REQUIRE(adj_matrix.rows == 4);
-  REQUIRE(adj_matrix.cols == 4);
+  REQUIRE(adj_matrix.rows() == 4);
+  REQUIRE(adj_matrix.cols() == 4);
   REQUIRE(adj_matrix(0, 0) == 0);
   REQUIRE(adj_matrix(0, 1) == 1);
   REQUIRE(adj_matrix(0, 2) == 0);
@@ -268,8 +268,8 @@ TEST_CASE("TriangularLattice", "[lattice]") {
   REQUIRE(lattice.site(0).edge(2).weight == 1.0);
 
   Matrix<int> adj_matrix = lattice.AdjMatrix();
-  REQUIRE(adj_matrix.rows == 1);
-  REQUIRE(adj_matrix.cols == 1);
+  REQUIRE(adj_matrix.rows() == 1);
+  REQUIRE(adj_matrix.cols() == 1);
   REQUIRE(adj_matrix(0, 0) == 1);
 }
 
@@ -320,8 +320,8 @@ TEST_CASE("KagomeLattice", "[lattice]") {
   REQUIRE(lattice.site(2).edge(1).weight == 1.0);
 
   Matrix<int> adj_matrix = lattice.AdjMatrix();
-  REQUIRE(adj_matrix.rows == 3);
-  REQUIRE(adj_matrix.cols == 3);
+  REQUIRE(adj_matrix.rows() == 3);
+  REQUIRE(adj_matrix.cols() == 3);
   REQUIRE(adj_matrix(0, 0) == 0);
   REQUIRE(adj_matrix(0, 1) == 1);
   REQUIRE(adj_matrix(0, 2) == 1);
