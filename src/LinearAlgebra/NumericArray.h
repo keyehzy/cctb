@@ -9,8 +9,10 @@
 template <typename T>
 class NBuffer {
  public:
-  NBuffer(int size)
-      : size_(size), data_(static_cast<T*>(std::aligned_alloc(32, size * sizeof(T)))) {}
+  NBuffer(int size) : size_(size) {
+    data_ = static_cast<T*>(std::aligned_alloc(32, size * sizeof(T)));
+    std::memset(data_, 0, size * sizeof(T));
+  }
 
   ~NBuffer() { std::free(data_); }
 
@@ -32,8 +34,6 @@ class NBuffer {
     std::swap(size_, other.size_);
     std::swap(data_, other.data_);
   }
-
-  void zeros() { std::memset(data_, 0, size_ * sizeof(T)); }
 
   void fill(T value) { std::fill(data_, data_ + size_, value); }
 
@@ -165,8 +165,7 @@ ALWAYS_INLINE T sum(const NumericArray<T>& x) {
   return result;
 }
 
-template <typename T>
-ALWAYS_INLINE void axpy(T alpha, const NumericArray<T>& x, NumericArray<T>& y) {
+ALWAYS_INLINE void axpy(double alpha, const NumericArray<double>& x, NumericArray<double>& y) {
   for (int i = 0; i < x.size(); ++i) {
     y[i] += alpha * x[i];
   }

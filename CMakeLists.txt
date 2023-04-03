@@ -9,6 +9,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 include(compile_options)
 include(extra_compile_options)
 
+find_package(BLAS)
+
 add_subdirectory(src)
 add_subdirectory(third-party)
 

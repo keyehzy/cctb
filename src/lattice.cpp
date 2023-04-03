@@ -22,7 +22,6 @@ void OneDimensionalLattice::Plot(PainterBackend backend, std::ostream &out) cons
 
 Matrix<std::complex<double>> OneDimensionalLattice::HoppingMatrix(Vector<1> k) const {
   Matrix<std::complex<double>> H(size(), size());
-  H.buffer().zeros();
   for (int src = 0; src < size(); src++) {
     for (const auto &edge : site(src).edges) {
       Point<1> to_position = site(edge.dst).position.translated(edge.offset[0] * m_a1);
@@ -137,7 +136,6 @@ void TwoDimensionalLattice::PlotBrillouinZone(PainterBackend backend, std::ostre
 
 Matrix<std::complex<double>> TwoDimensionalLattice::HoppingMatrix(Vector<2> k) const {
   Matrix<std::complex<double>> H(size(), size());
-  H.buffer().zeros();
   for (int src = 0; src < size(); src++) {
     for (const auto &edge : site(src).edges) {
       Point<2> to_position =
