@@ -4,8 +4,6 @@
 #include <cstdlib>
 #include <cstring>
 
-#define ALWAYS_INLINE inline __attribute__((always_inline))
-
 template <typename T>
 class NBuffer {
  public:
@@ -78,35 +76,10 @@ class NumericArray {
 
   NumericArray flatten() { return NumericArray(0, size_ * stride_, 1, buffer_); }
 
-  T dot(const NumericArray& other) const {
-    T result = 0;
-    for (int i = 0; i < nelms(); ++i) {
-      result += (*this)[i] * other[i];
-    }
-    return result;
-  }
-
-  T norm() const {
-    T result = 0;
-    for (int i = 0; i < nelms(); ++i) {
-      result += (*this)[i] * (*this)[i];
-    }
-    return std::sqrt(result);
-  }
-
-  T sum() const {
-    T result = 0;
-    for (int i = 0; i < nelms(); ++i) {
-      result += (*this)[i];
-    }
-    return result;
-  }
-
-  void scale(T alpha) {
-    for (int i = 0; i < nelms(); ++i) {
-      (*this)[i] *= alpha;
-    }
-  }
+  T dot(const NumericArray& other) const;
+  T norm() const;
+  T sum() const;
+  void scale(T alpha);
 
  protected:
   int start_;
@@ -123,7 +96,7 @@ NumericArray<T>::NumericArray(int start, int size, int stride)
     : start_(start), size_(size), stride_(stride), buffer_(size * stride) {}
 
 template <typename T>
-ALWAYS_INLINE bool operator==(const NumericArray<T>& lhs, const NumericArray<T>& rhs) {
+bool operator==(const NumericArray<T>& lhs, const NumericArray<T>& rhs) {
   if (lhs.size() != rhs.size()) {
     return false;
   }
@@ -133,40 +106,4 @@ ALWAYS_INLINE bool operator==(const NumericArray<T>& lhs, const NumericArray<T>&
     }
   }
   return true;
-}
-
-template <typename T>
-ALWAYS_INLINE T dot(const NumericArray<T>& x, const NumericArray<T>& y) {
-  T result = 0;
-  for (int i = 0; i < x.size(); ++i) {
-    result += x[i] * y[i];
-  }
-  return result;
-}
-
-template <typename T>
-ALWAYS_INLINE void scale(T alpha, NumericArray<T>& x) {
-  for (int i = 0; i < x.size(); ++i) {
-    x[i] *= alpha;
-  }
-}
-
-template <typename T>
-ALWAYS_INLINE T norm(const NumericArray<T>& x) {
-  return std::sqrt(dot(x, x));
-}
-
-template <typename T>
-ALWAYS_INLINE T sum(const NumericArray<T>& x) {
-  T result = 0;
-  for (int i = 0; i < x.size(); ++i) {
-    result += x[i];
-  }
-  return result;
-}
-
-ALWAYS_INLINE void axpy(double alpha, const NumericArray<double>& x, NumericArray<double>& y) {
-  for (int i = 0; i < x.size(); ++i) {
-    y[i] += alpha * x[i];
-  }
 }

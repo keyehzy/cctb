@@ -3,6 +3,7 @@
 #if HAVE_BLAS
 #include "cblas.h"
 #endif
+
 void sgemv(float alpha, const Matrix<float>& A, const NumericArray<float>& x, float beta,
            NumericArray<float>& y) {
 #if HAVE_BLAS

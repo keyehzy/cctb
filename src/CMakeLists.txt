@@ -9,6 +9,8 @@ add_library(
     Painter/Tikz.cpp
     Painter/Asymptote.cpp
     Geometry/Line.cpp
+    LinearAlgebra/Impl.cpp
+    LinearAlgebra/NumericArray.cpp
     LinearAlgebra/Matrix.cpp
 )
 target_include_directories(cctb-lib PUBLIC .)

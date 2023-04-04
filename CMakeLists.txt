@@ -13,6 +13,8 @@ find_package(BLAS)
 
 if (BLAS_FOUND)
   add_definitions(-DHAVE_BLAS)
+  find_path(BLAS_INCLUDE_DIRS cblas.h $ENV{CMAKE_PREFIX_PATH}/include)
+  include_directories(${BLAS_INCLUDE_DIRS})
 else()
   message(WARNING "BLAS not found")
 endif()
