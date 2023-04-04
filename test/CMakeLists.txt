@@ -5,6 +5,7 @@ add_executable(cctb-test
     test-geometry.cpp
     test-array.cpp
     test-matrix.cpp
+    test-lazy.cpp
 )
 target_include_directories(cctb-test PRIVATE .)
 target_link_libraries(cctb-test
