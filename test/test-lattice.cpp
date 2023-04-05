@@ -3,7 +3,7 @@
 #include <complex>
 
 #include "Geometry/Point.h"
-#include "lattice.h"
+#include "Lattice/lattice.h"
 
 template <std::size_t D>
 struct ApproxEqualVec : Catch::Matchers::MatcherGenericBase {

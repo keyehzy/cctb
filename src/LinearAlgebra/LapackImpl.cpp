@@ -1,17 +1,11 @@
 #include "LinearAlgebra/LapackImpl.h"
 
-#if HAVE_LAPACK
 #include <lapacke.h>
-#endif
-
-#define THROW() __builtin_unreachable()
-#define NOT_IMPLEMENTED() __builtin_unreachable()
 
 using cmplx = std::complex<double>;
 
 void geev(const Matrix<double>& a, NumericArray<std::complex<double>>& w,
           Matrix<std::complex<double>>& v) {
-#if HAVE_LAPACK
   int n = a.rows();
   int lda = a.rows();
   int ldvr = v.rows();
@@ -23,7 +17,7 @@ void geev(const Matrix<double>& a, NumericArray<std::complex<double>>& w,
   info = LAPACKE_dgeev(LAPACK_ROW_MAJOR, 'N', 'V', n, a.buffer().data(), lda, wr.buffer().data(),
                        wi.buffer().data(), nullptr, 1, vr.buffer().data(), ldvr);
 
-  if (info != 0) THROW();
+  if (info != 0) __builtin_trap();
 
   for (int i = 0; i < n; ++i) {
     w[i] = cmplx{wr[i], wi[i]};
@@ -42,7 +36,4 @@ void geev(const Matrix<double>& a, NumericArray<std::complex<double>>& w,
       ++i;
     }
   }
-#else
-  NOT_IMPLEMENTED();
-#endif
 }

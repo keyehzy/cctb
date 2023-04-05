@@ -1,23 +1,47 @@
 cmake_minimum_required(VERSION 3.23)
 
-add_executable(cctb main.cpp)
+find_package(BLAS REQUIRED)
+find_package(LAPACK REQUIRED)
+
+add_executable(
+    cctb
+    main.cpp
+)
+
+target_compile_options(
+    cctb
+    PRIVATE
+    "${CCTB_CXX_COMPILER_OPTIONS}"    
+)
+
+set_target_properties(cctb PROPERTIES RUNTIME_OUTPUT_DIRECTORY ..)
 target_link_libraries(cctb PRIVATE cctb-lib)
+
 add_library(
     cctb-lib
-    cctb.cpp
-    lattice.cpp
-    Painter/Tikz.cpp
-    Painter/Asymptote.cpp
-    Geometry/Line.cpp
+    Geometry/Line.cpp 
+    Geometry/Line.h
+    Geometry/Point.h
+    Geometry/Vector.h
+    Lattice/lattice.cpp
+    Lattice/lattice.h
     LinearAlgebra/BlasImpl.cpp
+    LinearAlgebra/BlasImpl.h   
     LinearAlgebra/LapackImpl.cpp
+    LinearAlgebra/LapackImpl.h
+    LinearAlgebra/Matrix.cpp    
+    LinearAlgebra/Matrix.h
     LinearAlgebra/NumericArray.cpp
-    LinearAlgebra/Matrix.cpp
+    LinearAlgebra/NumericArray.h
+    Painter/Asymptote.cpp
+    Painter/Painter.h
+    Painter/Tikz.cpp
 )
 target_include_directories(cctb-lib PUBLIC .)
 
-if (BLAS_FOUND AND LAPACK_FOUND)
-  target_link_libraries(cctb-lib PRIVATE -lm ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} -llapacke)
-else()
-  target_link_libraries(cctb-lib PRIVATE -lm)
-endif()
+target_link_libraries(
+    cctb-lib
+    PRIVATE
+    BLAS::BLAS
+)
+

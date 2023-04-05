@@ -3,7 +3,7 @@
 #include <utility>
 
 #include "Geometry/Point.h"
-#include "lattice.h"
+#include "Lattice/lattice.h"
 
 class GrapheneLatticeExtendedTest : public TwoDimensionalLattice {
  public:

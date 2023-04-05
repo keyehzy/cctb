@@ -1,30 +1,42 @@
 name: CMake
-
 on:
   push:
-    branches: [ "staging" ]
   pull_request:
-    branches: [ "master" ]
-env:
-  BUILD_TYPE: Release
+    types: [opend, syncronize]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: ${{ matrix.toolchain.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain:
+          - {runs_on: ubuntu-latest, name: "GCC Debug", CC: gcc, CXX: g++, CFLAGS: "", CMAKE_BUILD_TYPE: "Debug", WARNINGS: "-Werror;{0}", CMAKE_FLAGS: ""}
+          - {runs_on: ubuntu-latest, name: "GCC Release", CC: gcc, CXX: g++, CFLAGS: "", CMAKE_BUILD_TYPE: "Release", WARNINGS: "-Werror;{0}"}          
+    runs-on: ${{ matrix.toolchain.runs_on }}
+    env:
+      ASAN_OPTIONS: ${{ matrix.toolchain.ASAN_OPTIONS }}
+      CMAKE_BUILD_TYPE: ${{ matrix.toolchain.CMAKE_BUILD_TYPE }}
+      CMAKE_C_COMPILER: ${{ matrix.toolchain.CC }}
+      CMAKE_C_FLAGS: ${{ matrix.toolchain.CFLAGS }}
+      CMAKE_CXX_COMPILER: ${{ matrix.toolchain.CXX }}
+      CMAKE_CXX_FLAGS: ${{ matrix.toolchain.CFLAGS }}
+      CMAKE_EXE_LINKER_FLAGS: ${{ matrix.toolchain.CFLAGS }}
+      CMAKE_EXTRA_FLAGS: ${{ matrix.toolchain.CMAKE_FLAGS }}
+      CMAKE_SHARED_LINKER_FLAGS: ${{ matrix.toolchain.CFLAGS }}
 
+      CCTB_CXX_COMPILER_OPTIONS: ${{ '-Waddress;-Waggressive-loop-optimizations;-Wall;-Walloc-zero;-Walloca;-Warray-bounds;-Wattributes;-Wbool-compare;-Wbool-operation;-Wbuiltin-declaration-mismatch;-Wbuiltin-macro-redefined;-Wcast-align;-Wcast-qual;-Wchar-subscripts;-Wclobbered;-Wcomment;-Wcomments;-Wconditionally-supported;-Wconversion;-Wconversion-null;-Wcoverage-mismatch;-Wcpp;-Wctor-dtor-privacy;-Wdangling-else;-Wdate-time;-Wdelete-incomplete;-Wdelete-non-virtual-dtor;-Wdeprecated;-Wdeprecated-declarations;-Wdisabled-optimization;-Wdiv-by-zero;-Wdouble-promotion;-Wduplicated-branches;-Wduplicated-cond;-Wempty-body;-Wendif-labels;-Wenum-compare;-Wexpansion-to-defined;-Wextra;-Wfloat-conversion;-Wfloat-equal;-Wformat;-Wformat-contains-nul;-Wformat-extra-args;-Wformat-nonliteral;-Wformat-security;-Wformat-signedness;-Wformat-truncation;-Wformat-y2k;-Wformat-zero-length;-Wframe-address;-Wfree-nonheap-object;-Whsa;-Wignored-attributes;-Wignored-qualifiers;-Wimplicit-fallthrough;-Winherited-variadic-ctor;-Winit-self;-Wint-in-bool-context;-Wint-to-pointer-cast;-Winvalid-memory-model;-Winvalid-offsetof;-Winvalid-pch;-Wliteral-suffix;-Wlogical-not-parentheses;-Wlogical-op;-Wlto-type-mismatch;-Wmain;-Wmaybe-uninitialized;-Wmemset-elt-size;-Wmemset-transposed-args;-Wmisleading-indentation;-Wmissing-declarations;-Wmissing-field-initializers;-Wmissing-format-attribute;-Wmissing-include-dirs;-Wmissing-noreturn;-Wmultichar;-Wnarrowing;-Wnoexcept-type;-Wnon-template-friend;-Wnon-virtual-dtor;-Wnonnull;-Wnonnull-compare;-Wnormalized;-Wnull-dereference;-Wodr;-Wold-style-cast;-Wopenmp-simd;-Woverflow;-Woverloaded-virtual;-Wpacked;-Wpacked-bitfield-compat;-Wparentheses;-Wpedantic;-Wplacement-new;-Wpmf-conversions;-Wno-overlength-strings;-Wpointer-arith;-Wpointer-compare;-Wpragmas;-Wpsabi;-Wredundant-decls;-Wregister;-Wreorder;-Wrestrict;-Wreturn-local-addr;-Wreturn-type;-Wscalar-storage-order;-Wsequence-point;-Wshadow=local;-Wshift-count-negative;-Wshift-count-overflow;-Wshift-negative-value;-Wshift-overflow;-Wsign-compare;-Wsign-conversion;-Wsign-promo;-Wsized-deallocation;-Wsizeof-array-argument;-Wsizeof-pointer-memaccess;-Wstack-protector;-Wstrict-aliasing;-Wstrict-null-sentinel;-Wstrict-overflow;-Wstringop-overflow;-Wsubobject-linkage;-Wsuggest-final-methods;-Wsuggest-final-types;-Wsuggest-override;-Wswitch;-Wswitch-bool;-Wswitch-unreachable;-Wsync-nand;-Wsynth;-Wtautological-compare;-Wterminate;-Wtrampolines;-Wtrigraphs;-Wtype-limits;-Wundef;-Wuninitialized;-Wunknown-pragmas;-Wunreachable-code;-Wunsafe-loop-optimizations;-Wunused;-Wunused-but-set-parameter;-Wunused-but-set-variable;-Wunused-const-variable;-Wunused-function;-Wunused-label;-Wunused-local-typedefs;-Wunused-macros;-Wunused-parameter;-Wunused-result;-Wunused-value;-Wunused-variable;-Wuseless-cast;-Wvarargs;-Wvariadic-macros;-Wvector-operation-performance;-Wvirtual-inheritance;-Wvirtual-move-assign;-Wvla;-Wvolatile-register-var;-Wwrite-strings;-Wzero-as-null-pointer-constant' }}
     steps:
-    - uses: actions/checkout@v3
+    - name: checkout
+      uses: actions/checkout@v3
 
-    - name: Install necessary packages
-      run: sudo apt-get install -y libopenblas-dev libblas-dev liblapack-dev liblapacke-dev
-
-    - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+    - name: configure
+      run: |
+        sudo apt-get install -y libopenblas-dev libblas-dev liblapack-dev liblapacke-dev
+        cmake -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" -DBUILD_TESTING=YES -DCMAKE_C_COMPILER="${CMAKE_C_COMPILER}" -DCMAKE_CXX_COMPILER="${CMAKE_CXX_COMPILER}" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS}" -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}" -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS}" -DCMAKE_SHARED_LINKER_FLAGS="${CMAKE_SHARED_LINKER_FLAGS}" -DCCTB_CXX_COMPILER_OPTIONS="${CCTB_CXX_COMPILER_OPTIONS}" ${CMAKE_EXTRA_FLAGS} -S . -B .
 
     - name: Build
-      # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      run: cmake --build . --config Debug
 
     - name: Test
-      working-directory: ${{github.workspace}}/build
-      run: ctest -C ${{env.BUILD_TYPE}}
+      run: ctest --build-config Debug --verbose

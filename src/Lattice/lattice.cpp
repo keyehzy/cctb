@@ -1,4 +1,4 @@
-#include "lattice.h"
+#include "Lattice/lattice.h"
 
 #include <ostream>
 
