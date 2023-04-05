@@ -28,7 +28,7 @@ add_compile_options(-fno-semantic-interposition)
 add_compile_options(-fsized-deallocation)
 add_compile_options(-O2)
 add_compile_options(-march=native)
-add_compile_options(-g1)
+add_compile_options(-g3)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     add_compile_options(-Wno-literal-suffix)

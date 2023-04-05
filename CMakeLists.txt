@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.23)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
@@ -10,6 +10,7 @@ include(compile_options)
 include(extra_compile_options)
 
 find_package(BLAS)
+find_package(LAPACK)
 
 if (BLAS_FOUND)
   add_definitions(-DHAVE_BLAS)
@@ -17,6 +18,14 @@ if (BLAS_FOUND)
   include_directories(${BLAS_INCLUDE_DIRS})
 else()
   message(WARNING "BLAS not found")
+endif()
+
+if (LAPACK_FOUND)
+  add_definitions(-DHAVE_LAPACK)
+  find_path(LAPACK_INCLUDE_DIRS lapacke.h $ENV{CMAKE_PREFIX_PATH}/include)
+  include_directories(${LAPACK_INCLUDE_DIRS})
+else()
+  message(WARNING "LAPACK not found")
 endif()
 
 add_subdirectory(src)

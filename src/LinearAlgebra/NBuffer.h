@@ -22,7 +22,7 @@ class NBuffer {
 
   const T& operator[](int index) const { return data_[index]; }
 
-  NBuffer clone() {
+  NBuffer clone() const {
     NBuffer<T> new_buffer(size_);
     std::copy(data_, data_ + size_, new_buffer.data_);
     return new_buffer;

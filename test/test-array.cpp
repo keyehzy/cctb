@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "LinearAlgebra/Impl.h"
+#include "LinearAlgebra/BlasImpl.h"
 
 TEST_CASE("axpy", "[NumericArray]") {
   NumericArray<double> x(3);
