@@ -1,4 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 #include "LinearAlgebra/BlasImpl.h"
 
@@ -12,7 +13,7 @@ TEST_CASE("axpy", "[NumericArray]") {
   y[1] = 5.0;
   y[2] = 6.0;
   axpy(2.0, x, y);
-  REQUIRE(y[0] == 6.0);
-  REQUIRE(y[1] == 9.0);
-  REQUIRE(y[2] == 12.0);
+  REQUIRE_THAT(y[0], Catch::Matchers::WithinAbs(6.0, 1e-10));
+  REQUIRE_THAT(y[1], Catch::Matchers::WithinAbs(9.0, 1e-10));
+  REQUIRE_THAT(y[2], Catch::Matchers::WithinAbs(12.0, 1e-10));
 }

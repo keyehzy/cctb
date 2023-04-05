@@ -1,40 +1,19 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <catch2/matchers/catch_matchers_templated.hpp>
 #include <complex>
 
 #include "Geometry/Point.h"
 #include "Lattice/lattice.h"
-
-template <std::size_t D>
-struct ApproxEqualVec : Catch::Matchers::MatcherGenericBase {
- public:
-  ApproxEqualVec(Vector<D> v) : v_(v) {}
-
-  bool match(Vector<D> const &v) const {
-    if (v.size() != v_.size()) {
-      return false;
-    }
-    for (int i = 0; i < v.size(); i++) {
-      if (std::abs(v[i] - v_[i]) > 1e-6) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  std::string describe() const override { return "ApproxEqualVec"; }
-
- private:
-  Vector<D> v_;
-};
+#include "TestMatchers.h"
 
 class LinearChainTest : public OneDimensionalLattice {
  public:
-  LinearChainTest(int size) : OneDimensionalLattice(Vector<1>(1.0 * size)) {
-    for (int i = 0; i < size; i++) {
-      add_site(Point<1>(i));
+  LinearChainTest(size_t size) : OneDimensionalLattice(Vector<1>(1.0 * static_cast<double>(size))) {
+    for (size_t i = 0; i < size; i++) {
+      add_site(Point<1>(static_cast<double>(i)));
     }
-    for (int i = 0; i < size - 1; i++) {
+    for (size_t i = 0; i < size - 1; i++) {
       add_edge(i, i + 1, {0}, 1.0);
     }
     // if periodic, add the last edge
@@ -49,12 +28,12 @@ TEST_CASE("LinearChain", "[lattice]") {
   REQUIRE(lattice.site(0).size() == 1);
   REQUIRE(lattice.site(0).edge(0).dst == 1);
   REQUIRE(lattice.site(0).edge(0).offset == std::array<int, 1>{0});
-  REQUIRE(lattice.site(0).edge(0).weight == 1.0);
+  REQUIRE_THAT(lattice.site(0).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
   REQUIRE(lattice.site(1).position == Point<1>(1));
   REQUIRE(lattice.site(1).size() == 1);
   REQUIRE(lattice.site(1).edge(0).dst == 0);
   REQUIRE(lattice.site(1).edge(0).offset == std::array<int, 1>{1});
-  REQUIRE(lattice.site(1).edge(0).weight == 1.0);
+  REQUIRE_THAT(lattice.site(1).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
 
   Matrix<int> adj_matrix = lattice.AdjMatrix();
   REQUIRE(adj_matrix.rows() == 2);
@@ -90,10 +69,10 @@ TEST_CASE("SquareLattice", "[lattice]") {
   REQUIRE(lattice.site(0).size() == 2);
   REQUIRE(lattice.site(0).edge(0).dst == 0);
   REQUIRE(lattice.site(0).edge(0).offset == std::array<int, 2>{0, 1});
-  REQUIRE(lattice.site(0).edge(0).weight == 1.0);
+  REQUIRE_THAT(lattice.site(0).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
   REQUIRE(lattice.site(0).edge(1).dst == 0);
   REQUIRE(lattice.site(0).edge(1).offset == std::array<int, 2>{1, 0});
-  REQUIRE(lattice.site(0).edge(1).weight == 1.0);
+  REQUIRE_THAT(lattice.site(0).edge(1).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
 
   Matrix<int> adj_matrix = lattice.AdjMatrix();
   REQUIRE(adj_matrix.rows() == 1);
@@ -131,13 +110,13 @@ TEST_CASE("GrapheneLattice", "[lattice]") {
   REQUIRE(lattice.site(0).size() == 1);
   REQUIRE(lattice.site(0).edge(0).dst == 1);
   REQUIRE(lattice.site(0).edge(0).offset == std::array<int, 2>{0, 0});
-  REQUIRE(lattice.site(0).edge(0).weight == 1.0);
+  REQUIRE_THAT(lattice.site(0).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
 
   REQUIRE(lattice.site(1).position == Point<2>{0.5, 0.5 * sqrt(3.0)});
   REQUIRE(lattice.site(1).size() == 2);
   REQUIRE(lattice.site(1).edge(0).dst == 0);
   REQUIRE(lattice.site(1).edge(0).offset == std::array<int, 2>{1, 0});
-  REQUIRE(lattice.site(1).edge(0).weight == 1.0);
+  REQUIRE_THAT(lattice.site(1).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
   REQUIRE(lattice.site(1).edge(1).dst == 0);
   REQUIRE(lattice.site(1).edge(1).offset == std::array<int, 2>{1, -1});
 
@@ -193,31 +172,31 @@ TEST_CASE("GrapheneLatticeExtended", "[lattice]") {
   REQUIRE(lattice.site(0).size() == 1);
   REQUIRE(lattice.site(0).edge(0).dst == 1);
   REQUIRE(lattice.site(0).edge(0).offset == std::array<int, 2>{0, 0});
-  REQUIRE(lattice.site(0).edge(0).weight == 1.0);
+  REQUIRE_THAT(lattice.site(0).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
 
   REQUIRE(lattice.site(1).position == Point<2>{0.5, 0.5 * sqrt(3.0)});
   REQUIRE(lattice.site(1).size() == 2);
   REQUIRE(lattice.site(1).edge(0).dst == 2);
   REQUIRE(lattice.site(1).edge(0).offset == std::array<int, 2>{0, 0});
-  REQUIRE(lattice.site(1).edge(0).weight == 1.0);
+  REQUIRE_THAT(lattice.site(1).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
   REQUIRE(lattice.site(1).edge(1).dst == 0);
   REQUIRE(lattice.site(1).edge(1).offset == std::array<int, 2>{0, 1});
-  REQUIRE(lattice.site(1).edge(1).weight == 1.0);
+  REQUIRE_THAT(lattice.site(1).edge(1).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
 
   REQUIRE(lattice.site(2).position == Point<2>{1.5, 0.5 * sqrt(3.0)});
   REQUIRE(lattice.site(2).size() == 2);
   REQUIRE(lattice.site(2).edge(0).dst == 3);
   REQUIRE(lattice.site(2).edge(0).offset == std::array<int, 2>{0, 0});
-  REQUIRE(lattice.site(2).edge(0).weight == 1.0);
+  REQUIRE_THAT(lattice.site(2).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
   REQUIRE(lattice.site(2).edge(1).dst == 3);
   REQUIRE(lattice.site(2).edge(1).offset == std::array<int, 2>{0, 1});
-  REQUIRE(lattice.site(2).edge(1).weight == 1.0);
+  REQUIRE_THAT(lattice.site(2).edge(1).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
 
   REQUIRE(lattice.site(3).position == Point<2>{2.0, 0});
   REQUIRE(lattice.site(3).size() == 1);
   REQUIRE(lattice.site(3).edge(0).dst == 0);
   REQUIRE(lattice.site(3).edge(0).offset == std::array<int, 2>{1, 0});
-  REQUIRE(lattice.site(3).edge(0).weight == 1.0);
+  REQUIRE_THAT(lattice.site(3).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
 
   Matrix<int> adj_matrix = lattice.AdjMatrix();
   REQUIRE(adj_matrix.rows() == 4);
@@ -259,13 +238,13 @@ TEST_CASE("TriangularLattice", "[lattice]") {
   REQUIRE(lattice.site(0).size() == 3);
   REQUIRE(lattice.site(0).edge(0).dst == 0);
   REQUIRE(lattice.site(0).edge(0).offset == std::array<int, 2>{1, 0});
-  REQUIRE(lattice.site(0).edge(0).weight == 1.0);
+  REQUIRE_THAT(lattice.site(0).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
   REQUIRE(lattice.site(0).edge(1).dst == 0);
   REQUIRE(lattice.site(0).edge(1).offset == std::array<int, 2>{0, 1});
-  REQUIRE(lattice.site(0).edge(1).weight == 1.0);
+  REQUIRE_THAT(lattice.site(0).edge(1).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
   REQUIRE(lattice.site(0).edge(2).dst == 0);
   REQUIRE(lattice.site(0).edge(2).offset == std::array<int, 2>{1, -1});
-  REQUIRE(lattice.site(0).edge(2).weight == 1.0);
+  REQUIRE_THAT(lattice.site(0).edge(2).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
 
   Matrix<int> adj_matrix = lattice.AdjMatrix();
   REQUIRE(adj_matrix.rows() == 1);
@@ -296,28 +275,28 @@ TEST_CASE("KagomeLattice", "[lattice]") {
   REQUIRE(lattice.site(0).size() == 1);
   REQUIRE(lattice.site(0).edge(0).dst == 1);
   REQUIRE(lattice.site(0).edge(0).offset == std::array<int, 2>{0, 0});
-  REQUIRE(lattice.site(0).edge(0).weight == 1.0);
+  REQUIRE_THAT(lattice.site(0).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
 
   REQUIRE(lattice.site(1).position == Point<2>{1.0, 0});
   REQUIRE(lattice.site(1).size() == 3);
   REQUIRE(lattice.site(1).edge(0).dst == 2);
   REQUIRE(lattice.site(1).edge(0).offset == std::array<int, 2>{0, 0});
-  REQUIRE(lattice.site(1).edge(0).weight == 1.0);
+  REQUIRE_THAT(lattice.site(1).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
   REQUIRE(lattice.site(1).edge(1).dst == 0);
   REQUIRE(lattice.site(1).edge(1).offset == std::array<int, 2>{1, 0});
-  REQUIRE(lattice.site(1).edge(1).weight == 1.0);
+  REQUIRE_THAT(lattice.site(1).edge(1).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
   REQUIRE(lattice.site(1).edge(2).dst == 2);
   REQUIRE(lattice.site(1).edge(2).offset == std::array<int, 2>{1, -1});
-  REQUIRE(lattice.site(1).edge(2).weight == 1.0);
+  REQUIRE_THAT(lattice.site(1).edge(2).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
 
   REQUIRE(lattice.site(2).position == Point<2>{0.5, 0.5 * sqrt(3.0)});
   REQUIRE(lattice.site(2).size() == 2);
   REQUIRE(lattice.site(2).edge(0).dst == 0);
   REQUIRE(lattice.site(2).edge(0).offset == std::array<int, 2>{0, 0});
-  REQUIRE(lattice.site(2).edge(0).weight == 1.0);
+  REQUIRE_THAT(lattice.site(2).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
   REQUIRE(lattice.site(2).edge(1).dst == 0);
   REQUIRE(lattice.site(2).edge(1).offset == std::array<int, 2>{0, 1});
-  REQUIRE(lattice.site(2).edge(1).weight == 1.0);
+  REQUIRE_THAT(lattice.site(2).edge(1).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
 
   Matrix<int> adj_matrix = lattice.AdjMatrix();
   REQUIRE(adj_matrix.rows() == 3);

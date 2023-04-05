@@ -7,28 +7,28 @@
 template <typename T>
 class NumericArray {
  public:
-  NumericArray(int size);
-  NumericArray(int start, int size, int stride);
-  NumericArray(int start, int size, int stride, NBuffer<T> const& buffer);
+  NumericArray(size_t size);
+  NumericArray(size_t start, size_t size, size_t stride);
+  NumericArray(size_t start, size_t size, size_t stride, NBuffer<T> const& buffer);
   NumericArray(NumericArray const& other);
   NumericArray(NumericArray&& other);
 
   ~NumericArray() {}
 
-  T& operator[](int i) { return buffer_[i]; }
+  T& operator[](size_t i) { return buffer_[i]; }
 
-  const T& operator[](int i) const { return buffer_[i]; }
+  const T& operator[](size_t i) const { return buffer_[i]; }
 
-  int start() const { return start_; }
-  int size() const { return size_; }
-  int stride() const { return stride_; }
-  int nelms() const { return size_ * stride_; }
-  int bytes() const { return size_ * stride_ * sizeof(T); }
+  size_t start() const { return start_; }
+  size_t size() const { return size_; }
+  size_t stride() const { return stride_; }
+  size_t nelms() const { return size_ * stride_; }
+  size_t bytes() const { return size_ * stride_ * sizeof(T); }
 
   NBuffer<T>& buffer() { return buffer_; }
   const NBuffer<T>& buffer() const { return buffer_; }
 
-  NumericArray reshape(int start, int size, int stride) const {
+  NumericArray reshape(size_t start, size_t size, size_t stride) const {
     return NumericArray(start, size, stride, buffer_);
   }
 
@@ -40,21 +40,21 @@ class NumericArray {
   void scale(T alpha);
 
  protected:
-  int start_;
-  int size_;
-  int stride_;
+  size_t start_;
+  size_t size_;
+  size_t stride_;
   NBuffer<T> buffer_;
 };
 
 template <typename T>
-NumericArray<T>::NumericArray(int size) : start_(0), size_(size), stride_(1), buffer_(size) {}
+NumericArray<T>::NumericArray(size_t size) : start_(0), size_(size), stride_(1), buffer_(size) {}
 
 template <typename T>
-NumericArray<T>::NumericArray(int start, int size, int stride)
+NumericArray<T>::NumericArray(size_t start, size_t size, size_t stride)
     : start_(start), size_(size), stride_(stride), buffer_(size * stride) {}
 
 template <typename T>
-NumericArray<T>::NumericArray(int start, int size, int stride, NBuffer<T> const& buffer)
+NumericArray<T>::NumericArray(size_t start, size_t size, size_t stride, NBuffer<T> const& buffer)
     : start_(start), size_(size), stride_(stride), buffer_(buffer) {}
 
 template <typename T>
@@ -73,7 +73,7 @@ bool operator==(const NumericArray<T>& lhs, const NumericArray<T>& rhs) {
   if (lhs.size() != rhs.nelems()) {
     return false;
   }
-  for (int i = 0; i < lhs.nlems(); ++i) {
+  for (size_t i = 0; i < lhs.nlems(); ++i) {
     if (lhs[i] != rhs[i]) {
       return false;
     }
@@ -84,7 +84,7 @@ bool operator==(const NumericArray<T>& lhs, const NumericArray<T>& rhs) {
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const NumericArray<T>& array) {
   os << "[";
-  for (int i = 0; i < array.nelms(); ++i) {
+  for (size_t i = 0; i < array.nelms(); ++i) {
     os << array[i];
     if (i != array.nelms() - 1) {
       os << ", ";

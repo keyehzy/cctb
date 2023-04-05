@@ -11,14 +11,12 @@ jobs:
       fail-fast: false
       matrix:
         toolchain:
-          - {runs_on: ubuntu-latest, name: "GCC Debug", CC: gcc, CXX: g++, CFLAGS: "", CMAKE_BUILD_TYPE: "Debug", WARNINGS: "-Werror;{0}", CMAKE_FLAGS: ""}
-          - {runs_on: ubuntu-latest, name: "GCC Release", CC: gcc, CXX: g++, CFLAGS: "", CMAKE_BUILD_TYPE: "Release", WARNINGS: "-Werror;{0}"}          
+          - {runs_on: ubuntu-latest, name: "GCC Debug", CC: gcc, CXX: g++, BUILD_TYPE: "Debug", WARNINGS: "-Werror;{0}"}
+          - {runs_on: ubuntu-latest, name: "GCC Release", CC: gcc, CXX: g++, BUILD_TYPE: "Release", WARNINGS: "-Werror;{0}"}          
     runs-on: ${{ matrix.toolchain.runs_on }}
     env:
       ASAN_OPTIONS: ${{ matrix.toolchain.ASAN_OPTIONS }}
       CMAKE_BUILD_TYPE: ${{ matrix.toolchain.CMAKE_BUILD_TYPE }}
-      CMAKE_C_COMPILER: ${{ matrix.toolchain.CC }}
-      CMAKE_C_FLAGS: ${{ matrix.toolchain.CFLAGS }}
       CMAKE_CXX_COMPILER: ${{ matrix.toolchain.CXX }}
       CMAKE_CXX_FLAGS: ${{ matrix.toolchain.CFLAGS }}
       CMAKE_EXE_LINKER_FLAGS: ${{ matrix.toolchain.CFLAGS }}
@@ -33,10 +31,10 @@ jobs:
     - name: configure
       run: |
         sudo apt-get install -y libopenblas-dev libblas-dev liblapack-dev liblapacke-dev
-        cmake -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" -DBUILD_TESTING=YES -DCMAKE_C_COMPILER="${CMAKE_C_COMPILER}" -DCMAKE_CXX_COMPILER="${CMAKE_CXX_COMPILER}" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS}" -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}" -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS}" -DCMAKE_SHARED_LINKER_FLAGS="${CMAKE_SHARED_LINKER_FLAGS}" -DCCTB_CXX_COMPILER_OPTIONS="${CCTB_CXX_COMPILER_OPTIONS}" ${CMAKE_EXTRA_FLAGS} -S . -B .
+        cmake -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" -DBUILD_TESTING=YES -DCMAKE_CXX_COMPILER="${CMAKE_CXX_COMPILER}" -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}" -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS}" -DCMAKE_SHARED_LINKER_FLAGS="${CMAKE_SHARED_LINKER_FLAGS}" -DCCTB_CXX_COMPILER_OPTIONS="${CCTB_CXX_COMPILER_OPTIONS}" ${CMAKE_EXTRA_FLAGS} -S . -B .
 
     - name: Build
       run: cmake --build . --config Debug
 
     - name: Test
-      run: ctest --build-config Debug --verbose
+      run: ctest --build-config Debug --verbose --rerun-failed --output-on-failure

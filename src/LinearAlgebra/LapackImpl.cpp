@@ -9,13 +9,15 @@ void geev(const Matrix<double>& a, NumericArray<std::complex<double>>& w,
   int n = a.rows();
   int lda = a.rows();
   int ldvr = v.rows();
+  int ldvl = v.rows();
   int info = 0;
-  NumericArray<double> vr(ldvr * n);
+  NumericArray<double> vl(ldvr * n);
+  NumericArray<double> vr(ldvl * n);
   NumericArray<double> wr(n);
   NumericArray<double> wi(n);
 
   info = LAPACKE_dgeev(LAPACK_ROW_MAJOR, 'N', 'V', n, a.buffer().data(), lda, wr.buffer().data(),
-                       wi.buffer().data(), nullptr, 1, vr.buffer().data(), ldvr);
+                       wi.buffer().data(), vl.buffer().data(), ldvl, vr.buffer().data(), ldvr);
 
   if (info != 0) __builtin_trap();
 

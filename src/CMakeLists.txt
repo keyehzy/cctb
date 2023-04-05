@@ -43,5 +43,6 @@ target_link_libraries(
     cctb-lib
     PRIVATE
     BLAS::BLAS
+    lapacke
 )
 

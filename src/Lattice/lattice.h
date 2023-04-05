@@ -11,24 +11,24 @@
 #include "LinearAlgebra/Matrix.h"
 #include "Painter/Painter.h"
 
-template <std::size_t D>
+template <size_t D>
 struct Edge {
-  int dst;
+  size_t dst;
   std::array<int, D> offset;
   double weight;
 };
 
-template <std::size_t D>
+template <size_t D>
 struct GraphNode {
   Point<D> position;
   std::vector<Edge<D>> edges;
-  int size() const { return edges.size(); }
-  const Edge<D> &edge(int i) const { return edges[i]; }
-  Edge<D> &edge(int i) { return edges[i]; }
+  size_t size() const { return edges.size(); }
+  const Edge<D> &edge(size_t i) const { return edges[i]; }
+  Edge<D> &edge(size_t i) { return edges[i]; }
   GraphNode(Point<D> p) : position(p) {}
 };
 
-template <std::size_t D>
+template <size_t D>
 class Lattice {
  public:
   Lattice() {}
@@ -36,17 +36,17 @@ class Lattice {
 
   void add_site(GraphNode<D> node) { m_nodes.push_back(node); }
 
-  void add_edge(int src, int dst, std::array<int, D> offset, double weight) {
+  void add_edge(size_t src, size_t dst, std::array<int, D> offset, double weight) {
     m_nodes[src].edges.push_back({dst, offset, weight});
   }
 
   const std::vector<GraphNode<D>> &sites() const { return m_nodes; }
 
-  const GraphNode<D> &site(int i) const { return m_nodes[i]; }
+  const GraphNode<D> &site(size_t i) const { return m_nodes[i]; }
 
-  GraphNode<D> &site(int i) { return m_nodes[i]; }
+  GraphNode<D> &site(size_t i) { return m_nodes[i]; }
 
-  int size() const { return m_nodes.size(); }
+  size_t size() const { return m_nodes.size(); }
 
   virtual void Plot(PainterBackend, std::ostream &) const = 0;
 
@@ -58,10 +58,10 @@ class Lattice {
   std::vector<GraphNode<D>> m_nodes;
 };
 
-template <std::size_t D>
+template <size_t D>
 Matrix<int> Lattice<D>::AdjMatrix() const {
   Matrix<int> A(m_nodes.size(), m_nodes.size());
-  for (int i = 0; i < m_nodes.size(); ++i) {
+  for (size_t i = 0; i < m_nodes.size(); ++i) {
     for (auto edge : m_nodes[i].edges) {
       A(i, edge.dst) = 1;
       A(edge.dst, i) = 1;

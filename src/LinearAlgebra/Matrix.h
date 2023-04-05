@@ -5,11 +5,11 @@
 template <typename T>
 class Matrix final : public NumericArray<T> {
  public:
-  Matrix(int rows, int cols) : NumericArray<T>(0, cols, rows) {}
+  Matrix(size_t rows, size_t cols) : NumericArray<T>(0, cols, rows) {}
 
-  T& operator()(int i, int j) { return this->buffer_[i * cols() + j]; }
-  T operator()(int i, int j) const { return this->buffer_[i * cols() + j]; }
+  T& operator()(size_t i, size_t j) { return this->buffer_[i * cols() + j]; }
+  T operator()(size_t i, size_t j) const { return this->buffer_[i * cols() + j]; }
 
-  int rows() const { return this->stride_; }
-  int cols() const { return this->size_; }
+  size_t rows() const { return this->stride_; }
+  size_t cols() const { return this->size_; }
 };
