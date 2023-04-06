@@ -87,9 +87,8 @@ class TwoDimensionalLattice : public Lattice<2> {
   TwoDimensionalLattice(const Vector<2> &a1, const Vector<2> &a2) : m_a1(a1), m_a2(a2) {
     // https://physics.stackexchange.com/questions/340860/reciprocal-lattice-in-2d
     double det = a1[0] * a2[1] - a1[1] * a2[0];
-    double pref = 2.0 * M_PI / det;
-    m_b1 = pref * Vector<2>(a2[1], -a2[0]);
-    m_b2 = pref * Vector<2>(-a1[1], a1[0]);
+    m_b1 = (2.0 * M_PI / det) * Vector<2>(a2[1], -a2[0]);
+    m_b2 = (2.0 * M_PI / det) * Vector<2>(-a1[1], a1[0]);
   }
 
   Vector<2> a1() const { return m_a1; }

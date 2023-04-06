@@ -4,7 +4,7 @@
 #include <complex>
 
 #include "Geometry/Point.h"
-#include "Lattice/lattice.h"
+#include "Lattice/Lattice.h"
 #include "TestMatchers.h"
 
 class LinearChainTest : public OneDimensionalLattice {

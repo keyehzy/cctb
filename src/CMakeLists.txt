@@ -23,8 +23,13 @@ add_library(
     Geometry/Line.h
     Geometry/Point.h
     Geometry/Vector.h
-    Lattice/lattice.cpp
-    Lattice/lattice.h
+    Geometry/Region/Region.h
+    Geometry/Region/Rectangle.h
+    Geometry/Region/Rectangle.cpp
+    Geometry/Region/Circle.h
+    Geometry/Region/Circle.cpp    
+    Lattice/Lattice.h
+    Lattice/Lattice.cpp
     LinearAlgebra/BlasImpl.cpp
     LinearAlgebra/BlasImpl.h   
     LinearAlgebra/LapackImpl.cpp

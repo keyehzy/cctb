@@ -1,6 +1,6 @@
 #include "Geometry/Line.h"
 
-Point<2> Line::intersect(const Line& other) const {
+Point<2> Line::intersection_with(const Line& other) const {
   double x1 = p1_[0];
   double y1 = p1_[1];
   double x2 = p2_[0];
@@ -31,7 +31,7 @@ bool Line::orthogonal(const Line& other) const {
   double dy = (p2_[1] - p1_[1]);
   double dx2 = (other.p2()[0] - other.p1()[0]);
   double dy2 = (other.p2()[1] - other.p1()[1]);
-  return std::abs(dx * dx2 + dy * dy2) < 1e-6;
+  return fp_eq(dx * dx2 + dy * dy2, 0.0);
 }
 
 Point<2> Line::midpoint() const {

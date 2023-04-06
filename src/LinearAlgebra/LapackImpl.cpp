@@ -2,6 +2,8 @@
 
 #include <lapacke.h>
 
+#include "FloatPointHelpers.h"
+
 using cmplx = std::complex<double>;
 
 void geev(const Matrix<double>& a, NumericArray<std::complex<double>>& w,
@@ -26,7 +28,7 @@ void geev(const Matrix<double>& a, NumericArray<std::complex<double>>& w,
   }
 
   for (int i = 0; i < n; ++i) {
-    if (std::abs(wi[i]) < 1e-6) {
+    if (fp_eq(wi[i], 0.0)) {
       for (int j = 0; j < n; ++j) {
         v(j, i) = vr[j + i * ldvr];
       }

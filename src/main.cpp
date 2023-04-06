@@ -3,7 +3,9 @@
 #include <utility>
 
 #include "Geometry/Point.h"
-#include "Lattice/lattice.h"
+#include "Geometry/Region/Circle.h"
+#include "Geometry/Region/Rectangle.h"
+#include "Lattice/Lattice.h"
 
 class GrapheneLatticeExtendedTest : public TwoDimensionalLattice {
  public:
@@ -58,7 +60,8 @@ class GrapheneLattice : public TwoDimensionalLattice {
 };
 
 int main(void) {
-  GrapheneLattice lattice;
+  GrapheneLatticeExtendedTest lattice;
+  std::cout << lattice.size() << std::endl;
   std::ofstream lattice_file("lattice.asy");
   lattice.Plot(PainterBackend::kAsymptote, lattice_file);
   std::ofstream bz_file("bz.asy");

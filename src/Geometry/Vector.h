@@ -4,6 +4,7 @@
 #include <cmath>
 #include <iostream>
 
+#include "FloatPointHelpers.h"
 #include "Geometry/Point.h"
 
 template <size_t D>
@@ -59,6 +60,11 @@ class Vector {
     }
   }
 
+  double angle(const Vector& other) const {
+    double cos_angle = dot(other) / (norm() * other.norm());
+    return std::acos(cos_angle);
+  }
+
   Vector& operator=(const Vector& other) {
     data_ = other.data_;
     return *this;
@@ -92,6 +98,14 @@ class Vector {
     return *this;
   }
 
+  Vector operator-() const {
+    Vector result;
+    for (size_t i = 0; i < D; i++) {
+      result[i] = -data_[i];
+    }
+    return result;
+  }
+
   void Print() const {
     for (size_t i = 0; i < D; i++) {
       std::cout << data_[i] << " ";
@@ -106,7 +120,7 @@ class Vector {
 template <size_t D>
 bool operator==(const Vector<D>& lhs, const Vector<D>& rhs) {
   for (size_t i = 0; i < D; i++) {
-    if (std::abs(lhs[i] - rhs[i]) > 1e-10) {
+    if (!fp_eq(lhs[i], rhs[i])) {
       return false;
     }
   }
