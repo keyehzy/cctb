@@ -11,6 +11,7 @@ jobs:
       fail-fast: false
       matrix:
         toolchain:
+          - {runs_on: ubuntu-latest, name: "GCC Sanitizers", CC: gcc, CXX: g++, CFLAGS: "-fsanitize=address,undefined -fsanitize-address-use-after-scope -fno-sanitize-recover=address,undefined -fuse-ld=gold", CMAKE_BUILD_TYPE: "Debug", WARNINGS: "-Werror;{0}", ASAN_OPTIONS: "strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1"}        
           - {runs_on: ubuntu-latest, name: "GCC Debug", CC: gcc, CXX: g++, BUILD_TYPE: "Debug", WARNINGS: "-Werror;{0}"}
           - {runs_on: ubuntu-latest, name: "GCC Release", CC: gcc, CXX: g++, BUILD_TYPE: "Release", WARNINGS: "-Werror;{0}"}          
     runs-on: ${{ matrix.toolchain.runs_on }}
