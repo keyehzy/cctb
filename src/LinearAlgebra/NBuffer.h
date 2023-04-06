@@ -8,8 +8,11 @@ template <typename T>
 class NBuffer {
  public:
   NBuffer(size_t size) : size_(size) {
-    data_ = static_cast<T*>(std::aligned_alloc(32, size * sizeof(T)));
-    std::memset(data_, 0, size * sizeof(T));
+    size_t align = 32;
+    size_t bytes = size * sizeof(T);
+    size_t next_multiple_of_align = ((bytes + align - 1) / align) * align;
+    data_ = static_cast<T*>(std::aligned_alloc(align, next_multiple_of_align));
+    std::memset(data_, 0, bytes);
   }
 
   ~NBuffer() { std::free(data_); }
