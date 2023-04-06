@@ -41,3 +41,31 @@ void geev(const Matrix<double>& a, NumericArray<std::complex<double>>& w,
     }
   }
 }
+
+void geev(const Matrix<std::complex<double>>& a, NumericArray<std::complex<double>>& w,
+          Matrix<std::complex<double>>& v) {
+  int n = a.rows();
+  int lda = a.rows();
+  int ldvr = v.rows();
+  int ldvl = v.rows();
+  int info = 0;
+  NumericArray<std::complex<double>> vl(ldvr * n);
+  NumericArray<std::complex<double>> vr(ldvl * n);
+  NumericArray<std::complex<double>> W(n);
+
+  info = LAPACKE_zgeev(LAPACK_ROW_MAJOR, 'N', 'V', n, (_Complex double*)a.buffer().data(), lda,
+                       (_Complex double*)W.buffer().data(), (_Complex double*)vl.buffer().data(),
+                       ldvl, (_Complex double*)vr.buffer().data(), ldvr);
+
+  if (info != 0) __builtin_trap();
+
+  for (int i = 0; i < n; ++i) {
+    w[i] = W[i];
+  }
+
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < n; ++j) {
+      v(j, i) = vr[j + i * ldvr];
+    }
+  }
+}
