@@ -16,12 +16,12 @@ bool operator==(const Point<D>& lhs, const Point<D>& rhs);
 template <size_t D>
 class Point {
  public:
-  Point() : data_({}){};
-  Point(double x) : data_({x}){};
-  Point(double x, double y) : data_({x, y}){};
-  Point(double x, double y, double z) : data_({x, y, z}){};
-  Point(const std::array<double, D>& a) : data_(a){};
-  Point(const Point& other) : data_(other.data_){};
+  Point() : data_({}) {}
+  Point(double x) : data_({x}) {}
+  Point(double x, double y) : data_({x, y}) {}
+  Point(double x, double y, double z) : data_({x, y, z}) {}
+  Point(const std::array<double, D>& a) : data_(a) {}
+  Point(const Point& other) : data_(other.data_) {}
 
   int size() const { return D; }
 

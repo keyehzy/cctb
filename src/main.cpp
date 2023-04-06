@@ -23,7 +23,7 @@ class GrapheneLatticeExtendedTest : public TwoDimensionalLattice {
     add_edge(3, 0, {1, 0}, 1.0);
     add_edge(1, 0, {0, 1}, 1.0);
     add_edge(2, 3, {0, 1}, 1.0);
-  };
+  }
 };
 
 class TriangularLatticeTest : public TwoDimensionalLattice {

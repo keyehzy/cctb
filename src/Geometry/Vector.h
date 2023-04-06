@@ -12,12 +12,12 @@ class Point;
 template <size_t D>
 class Vector {
  public:
-  Vector() : data_({}){};
-  Vector(double x) : data_({x}){};
-  Vector(double x, double y) : data_({x, y}){};
-  Vector(double x, double y, double z) : data_({x, y, z}){};
-  Vector(const std::array<double, D>& a) : data_(a){};
-  Vector(const Vector& other) : data_(other.data_){};
+  Vector() : data_({}) {}
+  Vector(double x) : data_({x}) {}
+  Vector(double x, double y) : data_({x, y}) {}
+  Vector(double x, double y, double z) : data_({x, y, z}) {}
+  Vector(const std::array<double, D>& a) : data_(a) {}
+  Vector(const Vector& other) : data_(other.data_) {}
 
   Vector(const Point<D>& p1, const Point<D>& p2) {
     for (size_t i = 0; i < D; i++) {

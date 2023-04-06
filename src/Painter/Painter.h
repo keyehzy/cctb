@@ -30,7 +30,7 @@ enum class PainterBackend {
 class TikzPainter : public Painter {
  public:
   TikzPainter(std::ostream& out) : Painter(out) {}
-  virtual ~TikzPainter() {}
+  virtual ~TikzPainter() override {}
 
   virtual void Prepare() const override;
   virtual void SetAxis(double xmin, double xmax, double ymin, double ymax) const override;
@@ -45,7 +45,7 @@ class TikzPainter : public Painter {
 class AsymptotePainter : public Painter {
  public:
   AsymptotePainter(std::ostream& out) : Painter(out) {}
-  virtual ~AsymptotePainter() {}
+  virtual ~AsymptotePainter() override {}
 
   virtual void Prepare() const override;
   virtual void SetAxis(double xmin, double xmax, double ymin, double ymax) const override;

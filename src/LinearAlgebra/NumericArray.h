@@ -1,5 +1,6 @@
 #pragma once
 
+#include <complex>
 #include <ostream>
 
 #include "LinearAlgebra/NBuffer.h"
@@ -9,11 +10,7 @@ class NumericArray {
  public:
   NumericArray(size_t size);
   NumericArray(size_t start, size_t size, size_t stride);
-  NumericArray(size_t start, size_t size, size_t stride, NBuffer<T> const& buffer);
-  NumericArray(NumericArray const& other);
-  NumericArray(NumericArray&& other);
-
-  ~NumericArray() {}
+  NumericArray(const NumericArray& other);
 
   T& operator[](size_t i) { return buffer_[i]; }
 
@@ -47,26 +44,16 @@ class NumericArray {
 };
 
 template <typename T>
-NumericArray<T>::NumericArray(size_t size) : start_(0), size_(size), stride_(1), buffer_(size) {}
+NumericArray<T>::NumericArray(size_t size)
+    : start_(0), size_(size), stride_(1), buffer_(size, 32) {}
 
 template <typename T>
 NumericArray<T>::NumericArray(size_t start, size_t size, size_t stride)
-    : start_(start), size_(size), stride_(stride), buffer_(size * stride) {}
+    : start_(start), size_(size), stride_(stride), buffer_(size * stride, 32) {}
 
 template <typename T>
-NumericArray<T>::NumericArray(size_t start, size_t size, size_t stride, NBuffer<T> const& buffer)
-    : start_(start), size_(size), stride_(stride), buffer_(buffer) {}
-
-template <typename T>
-NumericArray<T>::NumericArray(NumericArray const& other)
+NumericArray<T>::NumericArray(const NumericArray& other)
     : start_(other.start_), size_(other.size_), stride_(other.stride_), buffer_(other.buffer_) {}
-
-template <typename T>
-NumericArray<T>::NumericArray(NumericArray&& other)
-    : start_(other.start_),
-      size_(other.size_),
-      stride_(other.stride_),
-      buffer_(std::move(other.buffer_)) {}
 
 template <typename T>
 bool operator==(const NumericArray<T>& lhs, const NumericArray<T>& rhs) {
@@ -93,3 +80,28 @@ std::ostream& operator<<(std::ostream& os, const NumericArray<T>& array) {
   os << "]";
   return os;
 }
+
+template <>
+double NumericArray<double>::dot(const NumericArray<double>& other) const;
+
+template <>
+double NumericArray<double>::norm() const;
+
+template <>
+double NumericArray<double>::sum() const;
+
+template <>
+void NumericArray<double>::scale(double alpha);
+
+template <>
+std::complex<double> NumericArray<std::complex<double>>::dot(
+    const NumericArray<std::complex<double>>& other) const;
+
+template <>
+double NumericArray<std::complex<double>>::norm() const;
+
+template <>
+std::complex<double> NumericArray<std::complex<double>>::sum() const;
+
+template <>
+void NumericArray<std::complex<double>>::scale(std::complex<double> alpha);
