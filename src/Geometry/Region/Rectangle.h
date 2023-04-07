@@ -11,6 +11,7 @@ class Rectangle : public Region<2> {
 
   Point<2> origin() const override { return origin_; }
   bool contains(const Point<2>& point) const override;
+  std::vector<Point<2>> grid(size_t n) const override;
   double width() const { return width_; }
   double height() const { return height_; }
 

@@ -48,11 +48,11 @@ class Lattice {
 
   size_t size() const { return m_nodes.size(); }
 
-  virtual void Plot(PainterBackend, std::ostream &) const = 0;
-
   Matrix<int> AdjMatrix() const;
 
   virtual Matrix<std::complex<double>> HoppingMatrix(Vector<D> k) const = 0;
+  virtual void Plot(PainterBackend, std::ostream &) const = 0;
+  virtual void PlotBandStructure(std::ostream &) const = 0;
 
  protected:
   std::vector<GraphNode<D>> m_nodes;
@@ -74,9 +74,10 @@ class OneDimensionalLattice : public Lattice<1> {
  public:
   OneDimensionalLattice(Vector<1> a1) : m_a1(a1) {}
 
-  void Plot(PainterBackend, std::ostream &) const override;
-
   Matrix<std::complex<double>> HoppingMatrix(Vector<1> k) const override;
+
+  void Plot(PainterBackend, std::ostream &) const override;
+  void PlotBandStructure(std::ostream &) const override;
 
  protected:
   Vector<1> m_a1;
@@ -96,11 +97,11 @@ class TwoDimensionalLattice : public Lattice<2> {
   Vector<2> b1() const { return m_b1; }
   Vector<2> b2() const { return m_b2; }
 
-  void Plot(PainterBackend, std::ostream &) const override;
-
-  void PlotBrillouinZone(PainterBackend, std::ostream &) const;
-
   Matrix<std::complex<double>> HoppingMatrix(Vector<2> k) const override;
+
+  void Plot(PainterBackend, std::ostream &) const override;
+  void PlotBandStructure(std::ostream &) const override;
+  void PlotBrillouinZone(PainterBackend, std::ostream &) const;
 
  protected:
   Vector<2> m_a1;

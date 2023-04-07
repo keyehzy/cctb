@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+#include <vector>
 
 #include "Geometry/Point.h"
 
@@ -12,4 +13,5 @@ class Region {
 
   virtual Point<N> origin() const = 0;
   virtual bool contains(const Point<N>& point) const = 0;
+  virtual std::vector<Point<N>> grid(size_t n) const = 0;
 };

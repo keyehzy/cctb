@@ -1,8 +1,26 @@
 #include "Lattice/Lattice.h"
 
 #include <ostream>
+#include <unordered_set>
 
 #include "Geometry/Line.h"
+#include "Geometry/Region/Parallelogram.h"
+#include "LinearAlgebra/LapackImpl.h"
+
+Matrix<std::complex<double>> OneDimensionalLattice::HoppingMatrix(Vector<1> k) const {
+  Matrix<std::complex<double>> H(size(), size());
+  for (int src = 0; src < size(); src++) {
+    for (const auto &edge : site(src).edges) {
+      Point<1> to_position = site(edge.dst).position.translated(edge.offset[0] * m_a1);
+      Vector<1> r(site(src).position, to_position);
+      double dot = k.dot(r);
+      std::complex<double> phase = std::complex<double>(0, dot);
+      H(src, edge.dst) += edge.weight * std::exp(phase);
+      H(edge.dst, src) += edge.weight * std::exp(-phase);
+    }
+  }
+  return H;
+}
 
 void OneDimensionalLattice::Plot(PainterBackend backend, std::ostream &out) const {
   auto plotter = PainterFactory::create(backend, out);
@@ -20,19 +38,25 @@ void OneDimensionalLattice::Plot(PainterBackend backend, std::ostream &out) cons
   plotter->Finish();
 }
 
-Matrix<std::complex<double>> OneDimensionalLattice::HoppingMatrix(Vector<1> k) const {
-  Matrix<std::complex<double>> H(size(), size());
-  for (int src = 0; src < size(); src++) {
-    for (const auto &edge : site(src).edges) {
-      Point<1> to_position = site(edge.dst).position.translated(edge.offset[0] * m_a1);
-      Vector<1> r(site(src).position, to_position);
-      double dot = k.dot(r);
-      std::complex<double> phase = std::complex<double>(0, dot);
-      H(src, edge.dst) += edge.weight * std::exp(phase);
-      H(edge.dst, src) += edge.weight * std::exp(-phase);
+void OneDimensionalLattice::PlotBandStructure(std::ostream &out) const {
+  int n = 50;
+  double ki = -M_PI / m_a1[0];
+  double kf = M_PI / m_a1[0];
+  double dk = (kf - ki) / static_cast<double>(n + 1);
+
+  for (int i = 0; i < n; i++) {
+    double k = ki + static_cast<double>(i) * dk;
+    auto Hk = HoppingMatrix(Vector<1>(k));
+    NumericArray<double> w(size());
+    Matrix<std::complex<double>> v(size(), size());
+    heev(Hk, w, v);
+
+    out << k;
+    for (int j = 0; j < size(); i++) {
+      out << " " << w[j];
     }
+    out << '\n';
   }
-  return H;
 }
 
 void TwoDimensionalLattice::Plot(PainterBackend backend, std::ostream &out) const {
@@ -148,4 +172,55 @@ Matrix<std::complex<double>> TwoDimensionalLattice::HoppingMatrix(Vector<2> k) c
     }
   }
   return H;
+}
+
+void TwoDimensionalLattice::PlotBandStructure(std::ostream &out) const {
+  out << "\\documentclass[border=10pt]{standalone}" << '\n';
+  out << "\\usepackage{pgfplots}" << '\n';
+  out << "\\usepackage{pgfplotstable}" << '\n';
+  out << "\\pgfplotstableread{" << '\n';
+
+  int n = 15;
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < n; j++) {
+      double kx = (m_b1[0] * i + m_b2[0] * j) / static_cast<double>(n + 1);
+      double ky = (m_b1[1] * i + m_b2[1] * j) / static_cast<double>(n + 1);
+      auto Hk = HoppingMatrix(Vector<2>(kx, ky));
+      NumericArray<double> w(size());
+      Matrix<std::complex<double>> v(size(), size());
+      heev(Hk, w, v);
+
+      out << kx << " " << ky;
+      for (int k = 0; k < size(); k++) {
+        out << " " << w[k];
+      }
+      out << '\n';
+    }
+    out << '\n';
+  }
+
+  out << "}{\\data}" << '\n';
+  out << "\\pgfplotsset{width=7cm,compat=1.18}" << '\n';
+  out << "\\begin{document}" << '\n';
+  out << "\\begin{tikzpicture}" << '\n';
+  out << "\\begin{axis}[" << '\n';
+  out << "title={}," << '\n';
+  out << "xlabel={$k_x$}," << '\n';
+  out << "ylabel={$k_y$}," << '\n';
+  out << "zlabel={$E(k)$}," << '\n';
+  out << "grid=both," << '\n';
+  out << "minor tick num=1," << '\n';
+  out << "major grid style={gray!50, very thin}," << '\n';
+  out << "minor grid style={gray!50, ultra thin}," << '\n';
+  out << "]" << '\n';
+
+  for (int i = 0; i < size(); i++) {
+    out << "\\addplot3[surf, mesh/ordering=y varies, mesh/rows=15, colormap/viridis, point meta="
+        << i << ", opacity=0.8] table[x index=0,y index=1,z index=" << i + 2 << "] {\\data};"
+        << '\n';
+  }
+
+  out << "\\end{axis}" << '\n';
+  out << "\\end{tikzpicture}" << '\n';
+  out << "\\end{document}" << '\n';
 }

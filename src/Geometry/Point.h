@@ -33,6 +33,8 @@ class Point {
     return result;
   }
 
+  Vector<D> as_vector_from_origin() const { return Vector<D>(data_); }
+
   double& operator[](size_t i) { return data_[i]; }
   double operator[](size_t i) const { return data_[i]; }
 

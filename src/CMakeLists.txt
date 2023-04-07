@@ -28,6 +28,8 @@ add_library(
     Geometry/Region/Rectangle.cpp
     Geometry/Region/Circle.h
     Geometry/Region/Circle.cpp    
+    Geometry/Region/Parallelogram.h 
+    Geometry/Region/Parallelogram.cpp
     Lattice/Lattice.h
     Lattice/Lattice.cpp
     LinearAlgebra/BlasImpl.cpp

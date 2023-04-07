@@ -60,11 +60,12 @@ class GrapheneLattice : public TwoDimensionalLattice {
 };
 
 int main(void) {
-  GrapheneLatticeExtendedTest lattice;
-  std::cout << lattice.size() << std::endl;
+  GrapheneLattice lattice;
   std::ofstream lattice_file("lattice.asy");
   lattice.Plot(PainterBackend::kAsymptote, lattice_file);
   std::ofstream bz_file("bz.asy");
   lattice.PlotBrillouinZone(PainterBackend::kAsymptote, bz_file);
+  std::ofstream band_file("band_new.tex");
+  lattice.PlotBandStructure(band_file);
   return 0;
 }
