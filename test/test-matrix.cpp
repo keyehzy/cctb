@@ -170,3 +170,67 @@ TEST_CASE("zgeev", "[Matrix]") {
   REQUIRE_THAT(z[0], ApproxEqualComplex(w[1] * y[0]));
   REQUIRE_THAT(z[1], ApproxEqualComplex(w[1] * y[1]));
 }
+
+TEST_CASE("dsyev", "[Matrix]") {
+  Matrix<double> A(2, 2);
+  A(0, 1) = 1.0;
+  A(1, 0) = 1.0;
+  NumericArray<double> w(2);
+  Matrix<double> v(2, 2);
+  syev(A, w, v);
+  REQUIRE_THAT(w[0], Catch::Matchers::WithinAbs(-1.0, 1e-10));
+  REQUIRE_THAT(w[1], Catch::Matchers::WithinAbs(1.0, 1e-10));
+  NumericArray<double> x(2), y(2);
+  x[0] = v(0, 0);
+  x[1] = v(0, 1);
+  y[0] = v(1, 0);
+  y[1] = v(1, 1);
+  REQUIRE_THAT(x.norm(), Catch::Matchers::WithinAbs(1.0, 1e-10));
+  REQUIRE_THAT(y.norm(), Catch::Matchers::WithinAbs(1.0, 1e-10));
+  REQUIRE_THAT(x.dot(y), Catch::Matchers::WithinAbs(0.0, 1e-10));
+  NumericArray<double> z(2);
+  double alpha = 1.0;
+  double beta = 0.0;
+  Matrix<double> A_c(2, 2);
+  A_c(0, 1) = 1.0;
+  A_c(1, 0) = 1.0;
+  gemv(alpha, A_c, x, beta, z);
+  REQUIRE_THAT(z[0], Catch::Matchers::WithinAbs(w[0] * x[0], 1e-10));
+  REQUIRE_THAT(z[1], Catch::Matchers::WithinAbs(w[0] * x[1], 1e-10));
+  gemv(alpha, A_c, y, beta, z);
+  REQUIRE_THAT(z[0], Catch::Matchers::WithinAbs(w[1] * y[0], 1e-10));
+  REQUIRE_THAT(z[1], Catch::Matchers::WithinAbs(w[1] * y[1], 1e-10));
+}
+
+TEST_CASE("heev", "[Matrix]") {
+  Matrix<std::complex<double>> A(2, 2);
+  A(0, 1) = std::complex<double>{0.0, 1.0};
+  A(1, 0) = std::complex<double>{0.0, -1.0};
+  NumericArray<double> w(2);
+  Matrix<std::complex<double>> v(2, 2);
+  heev(A, w, v);
+  REQUIRE_THAT(w[0], Catch::Matchers::WithinAbs(-1.0, 1e-10));
+  REQUIRE_THAT(w[1], Catch::Matchers::WithinAbs(1.0, 1e-10));
+  NumericArray<std::complex<double>> x(2), y(2);
+  x[0] = v(0, 0);
+  x[1] = v(0, 1);
+  y[0] = v(1, 0);
+  y[1] = v(1, 1);
+  REQUIRE_THAT(x.norm(), Catch::Matchers::WithinAbs(1.0, 1e-10));
+  REQUIRE_THAT(y.norm(), Catch::Matchers::WithinAbs(1.0, 1e-10));
+  REQUIRE_THAT(x.dot(y), ApproxEqualComplex(0.0));
+  NumericArray<std::complex<double>> z(2);
+  std::complex<double> alpha = 1.0;
+  std::complex<double> beta = 0.0;
+  Matrix<std::complex<double>> A_c(2, 2);
+  A_c(0, 1) = std::complex<double>{0.0, 1.0};
+  A_c(1, 0) = std::complex<double>{0.0, -1.0};
+  gemv(alpha, A_c, x, beta, z);
+  std::cout << z[0] << " " << z[1] << std::endl;
+  std::cout << w[0] * x[0] << " " << w[0] * x[1] << std::endl;
+  REQUIRE_THAT(z[0], ApproxEqualComplex(w[0] * x[0]));
+  REQUIRE_THAT(z[1], ApproxEqualComplex(w[0] * x[1]));
+  gemv(alpha, A_c, y, beta, z);
+  REQUIRE_THAT(z[0], ApproxEqualComplex(w[1] * y[0]));
+  REQUIRE_THAT(z[1], ApproxEqualComplex(w[1] * y[1]));
+}

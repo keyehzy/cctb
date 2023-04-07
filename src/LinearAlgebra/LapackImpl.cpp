@@ -2,6 +2,8 @@
 
 #include <lapacke.h>
 
+#include <iostream>
+
 #include "FloatPointHelpers.h"
 
 using cmplx = std::complex<double>;
@@ -49,23 +51,45 @@ void geev(const Matrix<std::complex<double>>& a, NumericArray<std::complex<doubl
   int ldvr = v.rows();
   int ldvl = v.rows();
   int info = 0;
-  NumericArray<std::complex<double>> vl(ldvr * n);
-  NumericArray<std::complex<double>> vr(ldvl * n);
-  NumericArray<std::complex<double>> W(n);
 
   info = LAPACKE_zgeev(LAPACK_ROW_MAJOR, 'N', 'V', n, (_Complex double*)a.buffer().data(), lda,
-                       (_Complex double*)W.buffer().data(), (_Complex double*)vl.buffer().data(),
-                       ldvl, (_Complex double*)vr.buffer().data(), ldvr);
+                       (_Complex double*)w.buffer().data(), (_Complex double*)0, 1,
+                       (_Complex double*)v.buffer().data(), ldvr);
 
   if (info != 0) __builtin_trap();
+}
 
-  for (int i = 0; i < n; ++i) {
-    w[i] = W[i];
-  }
+void syev(const Matrix<double>& a, NumericArray<double>& w, Matrix<double>& v) {
+  int n = a.rows();
+  int lda = a.rows();
+  int ldz = v.rows();
+  int info = 0;
+  int m = a.rows();
+  ;
 
-  for (int i = 0; i < n; ++i) {
-    for (int j = 0; j < n; ++j) {
-      v(j, i) = vr[j + i * ldvr];
-    }
-  }
+  NumericArray<int> isuppz(2 * n);
+
+  info = LAPACKE_dsyevr(LAPACK_ROW_MAJOR, 'V', 'A', 'U', n, a.buffer().data(), lda, 0.0, 0.0, 0, 0,
+                        0.0, &m, w.buffer().data(), v.buffer().data(), ldz, isuppz.buffer().data());
+
+  if (info != 0) __builtin_trap();
+}
+
+void heev(const Matrix<std::complex<double>>& a, NumericArray<double>& w,
+          Matrix<std::complex<double>>& v) {
+  int n = a.rows();
+  int lda = a.rows();
+  int ldz = v.rows();
+  int info = 0;
+  int m;
+
+  NumericArray<int> isuppz(2 * n);
+
+  info = LAPACKE_zheevr(LAPACK_ROW_MAJOR, 'V', 'A', 'U', n, (_Complex double*)a.buffer().data(),
+                        lda, 0.0, 0.0, 0, 0, 0.0, &m, w.buffer().data(),
+                        (_Complex double*)v.buffer().data(), ldz, isuppz.buffer().data());
+  std::cout << w << std::endl;
+  std::cout << v << std::endl;
+
+  if (info != 0) __builtin_trap();
 }
