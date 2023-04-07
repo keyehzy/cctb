@@ -88,8 +88,6 @@ void heev(const Matrix<std::complex<double>>& a, NumericArray<double>& w,
   info = LAPACKE_zheevr(LAPACK_ROW_MAJOR, 'V', 'A', 'U', n, (_Complex double*)a.buffer().data(),
                         lda, 0.0, 0.0, 0, 0, 0.0, &m, w.buffer().data(),
                         (_Complex double*)v.buffer().data(), ldz, isuppz.buffer().data());
-  std::cout << w << std::endl;
-  std::cout << v << std::endl;
 
   if (info != 0) __builtin_trap();
 }
