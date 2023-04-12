@@ -72,7 +72,7 @@ Matrix<int> Lattice<D>::AdjMatrix() const {
 
 class OneDimensionalLattice : public Lattice<1> {
  public:
-  OneDimensionalLattice(Vector<1> a1) : m_a1(a1) {}
+  OneDimensionalLattice(Vector<1> a1) : m_a1(a1) { m_b1 = 2.0 * M_PI * Vector<1>(1.0 / a1[0]); }
 
   Matrix<std::complex<double>> HoppingMatrix(Vector<1> k) const override;
 
@@ -81,6 +81,7 @@ class OneDimensionalLattice : public Lattice<1> {
 
  protected:
   Vector<1> m_a1;
+  Vector<1> m_b1;
 };
 
 class TwoDimensionalLattice : public Lattice<2> {

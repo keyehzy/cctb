@@ -7,6 +7,20 @@
 #include "Geometry/Region/Rectangle.h"
 #include "Lattice/Lattice.h"
 
+class LinearChainTest : public OneDimensionalLattice {
+ public:
+  LinearChainTest(size_t size) : OneDimensionalLattice(Vector<1>(1.0 * static_cast<double>(size))) {
+    for (size_t i = 0; i < size; i++) {
+      add_site(Point<1>(static_cast<double>(i)));
+    }
+    for (size_t i = 0; i < size - 1; i++) {
+      add_edge(i, i + 1, {0}, 1.0);
+    }
+    // if periodic, add the last edge
+    add_edge(size - 1, 0, {1}, 1.0);
+  }
+};
+
 class GrapheneLatticeExtendedTest : public TwoDimensionalLattice {
  public:
   GrapheneLatticeExtendedTest()
@@ -60,11 +74,11 @@ class GrapheneLattice : public TwoDimensionalLattice {
 };
 
 int main(void) {
-  TriangularLatticeTest lattice;
-  std::ofstream lattice_file("lattice.asy");
-  lattice.Plot(PainterBackend::kAsymptote, lattice_file);
-  std::ofstream bz_file("bz.asy");
-  lattice.PlotBrillouinZone(PainterBackend::kAsymptote, bz_file);
+  GrapheneLatticeExtendedTest lattice;
+  // std::ofstream lattice_file("lattice.asy");
+  // lattice.Plot(PainterBackend::kAsymptote, lattice_file);
+  // std::ofstream bz_file("bz.asy");
+  // lattice.PlotBrillouinZone(PainterBackend::kAsymptote, bz_file);
   std::ofstream band_file("band_new.tex");
   lattice.PlotBandStructure(band_file);
   return 0;

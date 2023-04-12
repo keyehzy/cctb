@@ -39,24 +39,61 @@ void OneDimensionalLattice::Plot(PainterBackend backend, std::ostream &out) cons
 }
 
 void OneDimensionalLattice::PlotBandStructure(std::ostream &out) const {
-  int n = 50;
-  double ki = -M_PI / m_a1[0];
-  double kf = M_PI / m_a1[0];
-  double dk = (kf - ki) / static_cast<double>(n + 1);
+  out << "\\documentclass[border=10pt]{standalone}" << '\n';
+  out << "\\usepackage{pgfplots}" << '\n';
+  out << "\\usepackage{pgfplotstable}" << '\n';
+  out << "\\pgfplotstableread{" << '\n';
 
+  int n = 25;
   for (int i = 0; i < n; i++) {
-    double k = ki + static_cast<double>(i) * dk;
+    double k = m_b1[0] * i / static_cast<double>(n - 1);
     auto Hk = HoppingMatrix(Vector<1>(k));
     NumericArray<double> w(size());
     Matrix<std::complex<double>> v(size(), size());
     diagonalize_hermitian(Hk, w, v);
 
     out << k;
-    for (int j = 0; j < size(); i++) {
-      out << " " << w[j];
+    for (int k = 0; k < size(); k++) {
+      out << " " << w[k];
     }
     out << '\n';
   }
+
+  out << "}{\\data}" << '\n';
+  out << "\\pgfplotsset{width=7cm,compat=1.18}" << '\n';
+  out << "\\begin{document}" << '\n';
+  out << "\\begin{tikzpicture}" << '\n';
+  out << "\\begin{axis}[" << '\n';
+  out << "title={}," << '\n';
+  out << "xlabel={$k$}," << '\n';
+  out << "ylabel={$E(k)$}," << '\n';
+  out << "grid=both," << '\n';
+  out << "minor tick num=1," << '\n';
+  out << "major grid style={gray!50, very thin}," << '\n';
+  out << "minor grid style={gray!50, ultra thin}," << '\n';
+  out << "colormap name=colormap/jet," << '\n';
+  out << "cycle list={[of colormap]}," << '\n';
+
+  out << "legend style={at={(1.3,0.5)},anchor=east}," << '\n';
+  out << "legend entries={";
+  for (int i = 0; i < size(); i++) {
+    out << "$E_" << i << "$";
+    if (i != size() - 1) {
+      out << ",";
+    }
+  }
+  out << "}," << '\n';
+
+  out << "]" << '\n';
+
+  for (int i = 0; i < size(); i++) {
+    out << "\\addplot+[mark=none, style=ultra thick] table[x index=0,y index=" << i + 1
+        << "] {\\data};" << '\n';
+  }
+
+  out << "\\end{axis}" << '\n';
+  out << "\\end{tikzpicture}" << '\n';
+  out << "\\end{document}" << '\n';
 }
 
 void TwoDimensionalLattice::Plot(PainterBackend backend, std::ostream &out) const {
@@ -180,11 +217,11 @@ void TwoDimensionalLattice::PlotBandStructure(std::ostream &out) const {
   out << "\\usepackage{pgfplotstable}" << '\n';
   out << "\\pgfplotstableread{" << '\n';
 
-  int n = 15;
+  int n = 25;
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
-      double kx = (m_b1[0] * i + m_b2[0] * j) / static_cast<double>(n + 1);
-      double ky = (m_b1[1] * i + m_b2[1] * j) / static_cast<double>(n + 1);
+      double kx = (m_b1[0] * i + m_b2[0] * j) / static_cast<double>(n - 1);
+      double ky = (m_b1[1] * i + m_b2[1] * j) / static_cast<double>(n - 1);
       auto Hk = HoppingMatrix(Vector<2>(kx, ky));
       NumericArray<double> w(size());
       Matrix<std::complex<double>> v(size(), size());
@@ -212,12 +249,32 @@ void TwoDimensionalLattice::PlotBandStructure(std::ostream &out) const {
   out << "minor tick num=1," << '\n';
   out << "major grid style={gray!50, very thin}," << '\n';
   out << "minor grid style={gray!50, ultra thin}," << '\n';
+  out << "view={25}{25}," << '\n';
+  out << "colormap name=viridis," << '\n';
+  out << "cycle list={[of colormap]}," << '\n';
+
+  out << "legend style={at={(1.3,0.5)},anchor=east}," << '\n';
+  // out << "legend entries={";
+  // for (int i = 0; i < size(); i++) {
+  //   out << "$E_" << i << "$";
+  //   if (i != size() - 1) {
+  //     out << ",";
+  //   }
+  // }
+  // out << "}," << '\n';
+
   out << "]" << '\n';
 
+  out << "\\pgfplotsinvokeforeach{0,...," << size() - 1
+      << "}{\\pgfplotscolormapdefinemappedcolor{\\the\\numexpr(#1)*1000/" << (size() - 1) << "}"
+      << '\n';
+  out << "\\colorlet{leg#1}{mapped color}" << '\n';
+  out << "\\addlegendimage{area legend,color=leg#1,fill}" << '\n';
+  out << "\\addlegendentry{$E_{#1}$}}" << '\n';
+
   for (int i = 0; i < size(); i++) {
-    out << "\\addplot3[surf, mesh/ordering=y varies, mesh/rows=15, colormap/viridis, point meta="
-        << i << ", opacity=0.8] table[x index=0,y index=1,z index=" << i + 2 << "] {\\data};"
-        << '\n';
+    out << "\\addplot3[surf, mesh/ordering=y varies, mesh/rows=25, opacity=0.8, point meta=" << i
+        << "] table[x index=0,y index=1,z index=" << i + 2 << "] {\\data};" << '\n';
   }
 
   out << "\\end{axis}" << '\n';
