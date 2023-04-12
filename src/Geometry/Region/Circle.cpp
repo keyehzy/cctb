@@ -8,17 +8,17 @@ bool Circle::contains(const Point<2>& point) const {
          radius_ * radius_;
 }
 
-std::vector<Point<2>> Circle::grid(size_t n) const {
-  std::vector<Point<2>> grid;
-  double dx = 2 * radius_ / (n + 1);
-  double dy = 2 * radius_ / (n + 1);
-  for (size_t i = 0; i < n; ++i) {
-    for (size_t j = 0; j < n; ++j) {
-      Point<2> point = {origin_[0] - radius_ + dx * i, origin_[1] - radius_ + dy * j};
-      if (contains(point)) {
-        grid.push_back(point);
-      }
+Mesh Circle::MakeMesh(int n) const {
+  Mesh mesh;
+  double angle_step = 2 * M_PI / n;
+  double radius_step = radius_ / n;
+  for (int i = 0; i < n; ++i) {
+    double angle = i * angle_step;
+    for (int j = 0; j < n; ++j) {
+      double radius = j * radius_step;
+      Point<2> point = {origin_[0] + radius * cos(angle), origin_[1] + radius * sin(angle)};
+      mesh.Add(point);
     }
   }
-  return grid;
+  return mesh;
 }

@@ -14,14 +14,14 @@ bool Parallelogram::contains(const Point<2>& point) const {
   return mu >= 0 && mu <= 1 && lambda >= 0 && lambda <= 1;
 }
 
-std::vector<Point<2>> Parallelogram::grid(size_t n) const {
-  std::vector<Point<2>> grid;
+Mesh Parallelogram::MakeMesh(int n) const {
+  Mesh mesh;
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
       double x = (u_[0] * i + v_[0] * j) / static_cast<double>(n - 1);
       double y = (u_[1] * i + v_[1] * j) / static_cast<double>(n - 1);
-      grid.push_back(Point<2>{x, y});
+      mesh.Add(Point<2>{x, y});
     }
   }
-  return grid;
+  return mesh;
 }

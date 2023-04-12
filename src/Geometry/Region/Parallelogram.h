@@ -10,7 +10,7 @@ class Parallelogram : public Region<2> {
 
   Point<2> origin() const override { return origin_; }
   bool contains(const Point<2>& point) const override;
-  std::vector<Point<2>> grid(size_t n) const override;
+  Mesh MakeMesh(int n) const override;
   Vector<2> u() const { return u_; }
   Vector<2> v() const { return v_; }
 

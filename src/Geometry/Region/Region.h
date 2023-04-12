@@ -3,6 +3,7 @@
 #include <cassert>
 #include <vector>
 
+#include "Geometry/Mesh.h"
 #include "Geometry/Point.h"
 
 template <size_t N>
@@ -13,5 +14,5 @@ class Region {
 
   virtual Point<N> origin() const = 0;
   virtual bool contains(const Point<N>& point) const = 0;
-  virtual std::vector<Point<N>> grid(size_t n) const = 0;
+  virtual Mesh MakeMesh(int n) const = 0;
 };

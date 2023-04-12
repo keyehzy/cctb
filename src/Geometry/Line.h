@@ -21,7 +21,7 @@ class Line {
   bool orthogonal(const Line& other) const;
   Point<2> midpoint() const;
 
-  Mesh MakeMesh() const;
+  Mesh MakeMesh(int n) const;
   void Print() const;
 
  private:

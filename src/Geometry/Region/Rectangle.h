@@ -1,22 +1,19 @@
 #pragma once
 
-#include "Geometry/Region/Region.h"
+#include "Geometry/Region/Parallelogram.h"
 
-class Rectangle : public Region<2> {
+class Rectangle : public Parallelogram {
  public:
-  Rectangle(){};
   Rectangle(const Point<2>& origin, double width, double height)
-      : origin_(origin), width_(width), height_(height){};
-  virtual ~Rectangle(){};
+      : Parallelogram(origin, Vector<2>(width, 0), Vector<2>(0, height)) {}
 
-  Point<2> origin() const override { return origin_; }
-  bool contains(const Point<2>& point) const override;
-  std::vector<Point<2>> grid(size_t n) const override;
+  ~Rectangle() {}
+
   double width() const { return width_; }
+
   double height() const { return height_; }
 
  private:
-  Point<2> origin_;
   double width_;
   double height_;
 };
