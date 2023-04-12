@@ -14,7 +14,24 @@ mark_as_advanced(CCTB_CXX_COMPILER_OPTIONS)
 add_subdirectory(src)
 add_subdirectory(third-party)
 
-include(CTest)
 if (BUILD_TESTING)
+   include(CTest)
    add_subdirectory(test)
+endif()
+
+if (CCTB_ENABLE_COVERAGE)
+   include(CodeCoverage)
+
+   target_compile_options(cctb-test PRIVATE --coverage)
+   target_link_libraries(cctb-test PRIVATE gcov)
+
+   target_compile_options(cctb-lib PRIVATE --coverage)
+   target_link_libraries(cctb-lib PRIVATE gcov)
+
+   setup_target_for_coverage_lcov(
+      NAME coverage
+      EXECUTABLE cctb-test
+      DEPENDENCIES cctb-lib
+      EXCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/third-party/*"
+   )
 endif()
