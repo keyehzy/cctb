@@ -12,5 +12,5 @@ void geev(const Matrix<std::complex<double>>& a, NumericArray<std::complex<doubl
           Matrix<std::complex<double>>& v);
 
 void syev(const Matrix<double>& a, NumericArray<double>& w, Matrix<double>& v);
-void heev(const Matrix<std::complex<double>>& a, NumericArray<double>& w,
-          Matrix<std::complex<double>>& v);
+void diagonalize_hermitian(const Matrix<std::complex<double>>& a, NumericArray<double>& w,
+                           Matrix<std::complex<double>>& v);

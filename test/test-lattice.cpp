@@ -5,6 +5,7 @@
 
 #include "Geometry/Point.h"
 #include "Lattice/Lattice.h"
+#include "LinearAlgebra/LapackImpl.h"
 #include "TestMatchers.h"
 
 class LinearChainTest : public OneDimensionalLattice {
@@ -50,6 +51,12 @@ TEST_CASE("LinearChain", "[lattice]") {
   REQUIRE(hopping_matrix(0, 1) == std::complex<double>(2.0 * cos(0.5), 0));
   REQUIRE(hopping_matrix(1, 0) == std::complex<double>(2.0 * cos(0.5), 0));
   REQUIRE(hopping_matrix(1, 1) == std::complex<double>(0, 0));
+
+  NumericArray<double> w(2);
+  Matrix<std::complex<double>> v(2, 2);
+  diagonalize_hermitian(hopping_matrix, w, v);
+  REQUIRE_THAT(w[0], Catch::Matchers::WithinAbs(-2.0 * cos(0.5), 1e-10));
+  REQUIRE_THAT(w[1], Catch::Matchers::WithinAbs(2.0 * cos(0.5), 1e-10));
 }
 
 class SquareLatticeTest : public TwoDimensionalLattice {
@@ -83,6 +90,11 @@ TEST_CASE("SquareLattice", "[lattice]") {
   REQUIRE(hopping_matrix.rows() == 1);
   REQUIRE(hopping_matrix.cols() == 1);
   REQUIRE(hopping_matrix(0, 0) == std::complex<double>(2.0 * cos(0.5) + 2.0 * cos(0.8), 0));
+
+  NumericArray<double> w(1);
+  Matrix<std::complex<double>> v(1, 1);
+  diagonalize_hermitian(hopping_matrix, w, v);
+  REQUIRE_THAT(w[0], Catch::Matchers::WithinAbs(2.0 * cos(0.5) + 2.0 * cos(0.8), 1e-10));
 }
 
 class GrapheneLatticeTest : public TwoDimensionalLattice {
@@ -143,6 +155,13 @@ TEST_CASE("GrapheneLattice", "[lattice]") {
   REQUIRE(hopping_matrix(1, 0) ==
           std::exp(-comp * k.dot(d1)) + std::exp(-comp * k.dot(d2)) + std::exp(-comp * k.dot(d3)));
   REQUIRE(hopping_matrix(1, 1) == std::complex<double>(0, 0));
+
+  NumericArray<double> w(2);
+  Matrix<std::complex<double>> v(2, 2);
+  diagonalize_hermitian(hopping_matrix, w, v);
+  double f_1 = 2.0 * cos(sqrt(3.0) * 0.8) + 4.0 * cos(0.5 * sqrt(3.0) * 0.8) * cos(1.5 * 0.5);
+  REQUIRE_THAT(w[0], Catch::Matchers::WithinAbs(-sqrt(3.0 + f_1), 1e-10));
+  REQUIRE_THAT(w[1], Catch::Matchers::WithinAbs(sqrt(3.0 + f_1), 1e-10));
 }
 
 class GrapheneLatticeExtendedTest : public TwoDimensionalLattice {

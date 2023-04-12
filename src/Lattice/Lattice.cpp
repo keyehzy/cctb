@@ -49,7 +49,7 @@ void OneDimensionalLattice::PlotBandStructure(std::ostream &out) const {
     auto Hk = HoppingMatrix(Vector<1>(k));
     NumericArray<double> w(size());
     Matrix<std::complex<double>> v(size(), size());
-    heev(Hk, w, v);
+    diagonalize_hermitian(Hk, w, v);
 
     out << k;
     for (int j = 0; j < size(); i++) {
@@ -188,7 +188,7 @@ void TwoDimensionalLattice::PlotBandStructure(std::ostream &out) const {
       auto Hk = HoppingMatrix(Vector<2>(kx, ky));
       NumericArray<double> w(size());
       Matrix<std::complex<double>> v(size(), size());
-      heev(Hk, w, v);
+      diagonalize_hermitian(Hk, w, v);
 
       out << kx << " " << ky;
       for (int k = 0; k < size(); k++) {

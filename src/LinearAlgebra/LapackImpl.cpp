@@ -76,8 +76,8 @@ void syev(const Matrix<double>& a, NumericArray<double>& w, Matrix<double>& v) {
   if (info != 0) __builtin_trap();
 }
 
-void heev(const Matrix<std::complex<double>>& a, NumericArray<double>& w,
-          Matrix<std::complex<double>>& v) {
+void diagonalize_hermitian(const Matrix<std::complex<double>>& a, NumericArray<double>& w,
+                           Matrix<std::complex<double>>& v) {
   int n = a.rows();
   int lda = a.rows();
   int ldz = v.rows();

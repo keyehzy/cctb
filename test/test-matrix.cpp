@@ -208,7 +208,7 @@ TEST_CASE("heev", "[Matrix]") {
   A(1, 0) = std::complex<double>{0.0, -1.0};
   NumericArray<double> w(2);
   Matrix<std::complex<double>> v(2, 2);
-  heev(A, w, v);
+  diagonalize_hermitian(A, w, v);
   REQUIRE_THAT(w[0], Catch::Matchers::WithinAbs(-1.0, 1e-10));
   REQUIRE_THAT(w[1], Catch::Matchers::WithinAbs(1.0, 1e-10));
   NumericArray<std::complex<double>> x(2), y(2);
