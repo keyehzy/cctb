@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+set -e
+set -o pipefail
+set -u
+
+ROOT="$(git rev-parse --show-toplevel)"
+
+find_repository_files() {
+    git ls-files --cached --exclude-standard -- "${ROOT}"
+}
+
+check_for_pragma_once() {
+    local file="$1"
+    local line
+    line="$(head -n 1 "${file}")"
+    if [[ "${line}" != "#pragma once" ]]; then
+        echo "Missing #pragma once in ${file}"
+        exit 1
+    fi
+}
+
+FILES="$(find_repository_files | grep -v '^third-party' | grep -E '\.(h)$')"
+
+echo "Checking for #pragma once in the following files:"
+echo "${FILES}"
+
+for file in ${FILES}; do
+    check_for_pragma_once "${file}"
+done
+
+exit 0
