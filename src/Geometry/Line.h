@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Geometry/Mesh.h"
 #include "Geometry/Point.h"
 #include "Geometry/Region/Circle.h"
 #include "Geometry/Vector.h"
@@ -20,6 +21,7 @@ class Line {
   bool orthogonal(const Line& other) const;
   Point<2> midpoint() const;
 
+  Mesh MakeMesh() const;
   void Print() const;
 
  private:

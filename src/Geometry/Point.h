@@ -35,6 +35,8 @@ class Point {
 
   Vector<D> as_vector_from_origin() const { return Vector<D>(data_); }
 
+  double distance_to(const Point& other) const { return Vector(*this, other).norm(); }
+
   double& operator[](size_t i) { return data_[i]; }
   double operator[](size_t i) const { return data_[i]; }
 

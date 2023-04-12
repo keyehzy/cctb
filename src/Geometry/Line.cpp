@@ -48,3 +48,17 @@ void Line::Print() const {
   std::cout << "Line: (" << p1_[0] << ", " << p1_[1] << ") -> (" << p2_[0] << ", " << p2_[1] << ")"
             << std::endl;
 }
+
+Mesh Line::MakeMesh() const {
+  Mesh mesh;
+  double length = p1_.distance_to(p2_);
+  double min_length = 0.1;
+  int n = std::max(1, static_cast<int>(length / min_length));
+  double dx = (p2_[0] - p1_[0]) / n;
+  double dy = (p2_[1] - p1_[1]) / n;
+  for (int i = 0; i < n; i++) {
+    mesh.Add(Point<2>{p1_[0] + i * dx, p1_[1] + i * dy});
+  }
+  mesh.Add(Point<2>{p2_[0], p2_[1]});
+  return mesh;
+}
