@@ -5,7 +5,6 @@
 
 #include "Geometry/Point.h"
 #include "Lattice/Lattice.h"
-#include "LinearAlgebra/LapackImpl.h"
 #include "TestMatchers.h"
 
 class LinearChainTest : public OneDimensionalLattice {
@@ -36,7 +35,7 @@ TEST_CASE("LinearChain", "[lattice]") {
   REQUIRE(lattice.site(1).edge(0).offset == std::array<int, 1>{1});
   REQUIRE_THAT(lattice.site(1).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
 
-  Matrix<int> adj_matrix = lattice.AdjMatrix();
+  Eigen::MatrixXi adj_matrix = lattice.AdjMatrix();
   REQUIRE(adj_matrix.rows() == 2);
   REQUIRE(adj_matrix.cols() == 2);
   REQUIRE(adj_matrix(0, 0) == 0);
@@ -44,7 +43,7 @@ TEST_CASE("LinearChain", "[lattice]") {
   REQUIRE(adj_matrix(1, 0) == 1);
   REQUIRE(adj_matrix(1, 1) == 0);
 
-  Matrix<std::complex<double>> hopping_matrix = lattice.HoppingMatrix(0.5);
+  Eigen::MatrixXcd hopping_matrix = lattice.HoppingMatrix(0.5);
   REQUIRE(hopping_matrix.rows() == 2);
   REQUIRE(hopping_matrix.cols() == 2);
   REQUIRE(hopping_matrix(0, 0) == std::complex<double>(0, 0));
@@ -52,9 +51,12 @@ TEST_CASE("LinearChain", "[lattice]") {
   REQUIRE(hopping_matrix(1, 0) == std::complex<double>(2.0 * cos(0.5), 0));
   REQUIRE(hopping_matrix(1, 1) == std::complex<double>(0, 0));
 
-  NumericArray<double> w(2);
-  Matrix<std::complex<double>> v(2, 2);
-  diagonalize_hermitian(hopping_matrix, w, v);
+  Eigen::VectorXd w(2);
+  Eigen::MatrixXcd v(2, 2);
+  Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> es(hopping_matrix);
+  w = es.eigenvalues();
+  v = es.eigenvectors();
+
   REQUIRE_THAT(w[0], Catch::Matchers::WithinAbs(-2.0 * cos(0.5), 1e-10));
   REQUIRE_THAT(w[1], Catch::Matchers::WithinAbs(2.0 * cos(0.5), 1e-10));
 }
@@ -81,19 +83,21 @@ TEST_CASE("SquareLattice", "[lattice]") {
   REQUIRE(lattice.site(0).edge(1).offset == std::array<int, 2>{1, 0});
   REQUIRE_THAT(lattice.site(0).edge(1).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
 
-  Matrix<int> adj_matrix = lattice.AdjMatrix();
+  Eigen::MatrixXi adj_matrix = lattice.AdjMatrix();
   REQUIRE(adj_matrix.rows() == 1);
   REQUIRE(adj_matrix.cols() == 1);
   REQUIRE(adj_matrix(0, 0) == 1);
 
-  Matrix<std::complex<double>> hopping_matrix = lattice.HoppingMatrix(Vector<2>{0.5, 0.8});
+  Eigen::MatrixXcd hopping_matrix = lattice.HoppingMatrix(Vector<2>{0.5, 0.8});
   REQUIRE(hopping_matrix.rows() == 1);
   REQUIRE(hopping_matrix.cols() == 1);
   REQUIRE(hopping_matrix(0, 0) == std::complex<double>(2.0 * cos(0.5) + 2.0 * cos(0.8), 0));
 
-  NumericArray<double> w(1);
-  Matrix<std::complex<double>> v(1, 1);
-  diagonalize_hermitian(hopping_matrix, w, v);
+  Eigen::VectorXd w(1);
+  Eigen::MatrixXcd v(1, 1);
+  Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> es(hopping_matrix);
+  w = es.eigenvalues();
+  v = es.eigenvectors();
   REQUIRE_THAT(w[0], Catch::Matchers::WithinAbs(2.0 * cos(0.5) + 2.0 * cos(0.8), 1e-10));
 }
 
@@ -132,7 +136,7 @@ TEST_CASE("GrapheneLattice", "[lattice]") {
   REQUIRE(lattice.site(1).edge(1).dst == 0);
   REQUIRE(lattice.site(1).edge(1).offset == std::array<int, 2>{1, -1});
 
-  Matrix<int> adj_matrix = lattice.AdjMatrix();
+  Eigen::MatrixXi adj_matrix = lattice.AdjMatrix();
   REQUIRE(adj_matrix.rows() == 2);
   REQUIRE(adj_matrix.cols() == 2);
   REQUIRE(adj_matrix(0, 0) == 0);
@@ -146,7 +150,7 @@ TEST_CASE("GrapheneLattice", "[lattice]") {
   Vector<2> k{0.5, 0.8};
   std::complex<double> comp = std::complex<double>(0.0, 1.0);
 
-  Matrix<std::complex<double>> hopping_matrix = lattice.HoppingMatrix(k);
+  Eigen::MatrixXcd hopping_matrix = lattice.HoppingMatrix(k);
   REQUIRE(hopping_matrix.rows() == 2);
   REQUIRE(hopping_matrix.cols() == 2);
   REQUIRE(hopping_matrix(0, 0) == std::complex<double>(0, 0));
@@ -156,9 +160,11 @@ TEST_CASE("GrapheneLattice", "[lattice]") {
           std::exp(-comp * k.dot(d1)) + std::exp(-comp * k.dot(d2)) + std::exp(-comp * k.dot(d3)));
   REQUIRE(hopping_matrix(1, 1) == std::complex<double>(0, 0));
 
-  NumericArray<double> w(2);
-  Matrix<std::complex<double>> v(2, 2);
-  diagonalize_hermitian(hopping_matrix, w, v);
+  Eigen::VectorXd w(2);
+  Eigen::MatrixXcd v(2, 2);
+  Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> es(hopping_matrix);
+  w = es.eigenvalues();
+  v = es.eigenvectors();
   double f_1 = 2.0 * cos(sqrt(3.0) * 0.8) + 4.0 * cos(0.5 * sqrt(3.0) * 0.8) * cos(1.5 * 0.5);
   REQUIRE_THAT(w[0], Catch::Matchers::WithinAbs(-sqrt(3.0 + f_1), 1e-10));
   REQUIRE_THAT(w[1], Catch::Matchers::WithinAbs(sqrt(3.0 + f_1), 1e-10));
@@ -217,7 +223,7 @@ TEST_CASE("GrapheneLatticeExtended", "[lattice]") {
   REQUIRE(lattice.site(3).edge(0).offset == std::array<int, 2>{1, 0});
   REQUIRE_THAT(lattice.site(3).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
 
-  Matrix<int> adj_matrix = lattice.AdjMatrix();
+  Eigen::MatrixXi adj_matrix = lattice.AdjMatrix();
   REQUIRE(adj_matrix.rows() == 4);
   REQUIRE(adj_matrix.cols() == 4);
   REQUIRE(adj_matrix(0, 0) == 0);
@@ -265,7 +271,7 @@ TEST_CASE("TriangularLattice", "[lattice]") {
   REQUIRE(lattice.site(0).edge(2).offset == std::array<int, 2>{1, -1});
   REQUIRE_THAT(lattice.site(0).edge(2).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
 
-  Matrix<int> adj_matrix = lattice.AdjMatrix();
+  Eigen::MatrixXi adj_matrix = lattice.AdjMatrix();
   REQUIRE(adj_matrix.rows() == 1);
   REQUIRE(adj_matrix.cols() == 1);
   REQUIRE(adj_matrix(0, 0) == 1);
@@ -317,7 +323,7 @@ TEST_CASE("KagomeLattice", "[lattice]") {
   REQUIRE(lattice.site(2).edge(1).offset == std::array<int, 2>{0, 1});
   REQUIRE_THAT(lattice.site(2).edge(1).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
 
-  Matrix<int> adj_matrix = lattice.AdjMatrix();
+  Eigen::MatrixXi adj_matrix = lattice.AdjMatrix();
   REQUIRE(adj_matrix.rows() == 3);
   REQUIRE(adj_matrix.cols() == 3);
   REQUIRE(adj_matrix(0, 0) == 0);

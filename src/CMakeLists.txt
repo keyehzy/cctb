@@ -32,14 +32,6 @@ add_library(
     Geometry/Region/Parallelogram.cpp
     Lattice/Lattice.h
     Lattice/Lattice.cpp
-    LinearAlgebra/BlasImpl.cpp
-    LinearAlgebra/BlasImpl.h   
-    LinearAlgebra/LapackImpl.cpp
-    LinearAlgebra/LapackImpl.h
-    LinearAlgebra/Matrix.cpp    
-    LinearAlgebra/Matrix.h
-    LinearAlgebra/NumericArray.cpp
-    LinearAlgebra/NumericArray.h
     Painter/Asymptote.cpp
     Painter/Painter.h
     Painter/Tikz.cpp
@@ -49,7 +41,6 @@ target_include_directories(cctb-lib PUBLIC .)
 target_link_libraries(
     cctb-lib
     PRIVATE
-    BLAS::BLAS
-    lapacke
+    Eigen3::Eigen
 )
 

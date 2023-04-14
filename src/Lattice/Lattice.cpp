@@ -5,10 +5,9 @@
 
 #include "Geometry/Line.h"
 #include "Geometry/Region/Parallelogram.h"
-#include "LinearAlgebra/LapackImpl.h"
 
-Matrix<std::complex<double>> OneDimensionalLattice::HoppingMatrix(Vector<1> k) const {
-  Matrix<std::complex<double>> H(size(), size());
+Eigen::MatrixXcd OneDimensionalLattice::HoppingMatrix(Vector<1> k) const {
+  Eigen::MatrixXcd H = Eigen::MatrixXcd::Zero(size(), size());
   for (int src = 0; src < size(); src++) {
     for (const auto &edge : site(src).edges) {
       Point<1> to_position = site(edge.dst).position.translated(edge.offset[0] * m_a1);
@@ -48,9 +47,11 @@ void OneDimensionalLattice::PlotBandStructure(std::ostream &out) const {
   for (int i = 0; i < n; i++) {
     double k = m_b1[0] * i / static_cast<double>(n - 1);
     auto Hk = HoppingMatrix(Vector<1>(k));
-    NumericArray<double> w(size());
-    Matrix<std::complex<double>> v(size(), size());
-    diagonalize_hermitian(Hk, w, v);
+    Eigen::Vector<double, 1> w(size());
+    Eigen::MatrixXcd v(size(), size());
+    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> solver(Hk);
+    w = solver.eigenvalues();
+    v = solver.eigenvectors();
 
     out << k;
     for (int k = 0; k < size(); k++) {
@@ -195,8 +196,8 @@ void TwoDimensionalLattice::PlotBrillouinZone(PainterBackend backend, std::ostre
   plotter->Finish();
 }
 
-Matrix<std::complex<double>> TwoDimensionalLattice::HoppingMatrix(Vector<2> k) const {
-  Matrix<std::complex<double>> H(size(), size());
+Eigen::MatrixXcd TwoDimensionalLattice::HoppingMatrix(Vector<2> k) const {
+  Eigen::MatrixXcd H = Eigen::MatrixXcd::Zero(size(), size());
   for (int src = 0; src < size(); src++) {
     for (const auto &edge : site(src).edges) {
       Point<2> to_position =
@@ -223,9 +224,11 @@ void TwoDimensionalLattice::PlotBandStructure(std::ostream &out) const {
       double kx = (m_b1[0] * i + m_b2[0] * j) / static_cast<double>(n - 1);
       double ky = (m_b1[1] * i + m_b2[1] * j) / static_cast<double>(n - 1);
       auto Hk = HoppingMatrix(Vector<2>(kx, ky));
-      NumericArray<double> w(size());
-      Matrix<std::complex<double>> v(size(), size());
-      diagonalize_hermitian(Hk, w, v);
+      Eigen::VectorXd w(size());
+      Eigen::MatrixXcd v(size(), size());
+      Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> solver(Hk);
+      w = solver.eigenvalues();
+      v = solver.eigenvectors();
 
       out << kx << " " << ky;
       for (int k = 0; k < size(); k++) {

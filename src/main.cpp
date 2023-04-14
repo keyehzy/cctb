@@ -74,7 +74,7 @@ class GrapheneLattice : public TwoDimensionalLattice {
 };
 
 int main(void) {
-  GrapheneLatticeExtendedTest lattice;
+  GrapheneLattice lattice;
   // std::ofstream lattice_file("lattice.asy");
   // lattice.Plot(PainterBackend::kAsymptote, lattice_file);
   // std::ofstream bz_file("bz.asy");

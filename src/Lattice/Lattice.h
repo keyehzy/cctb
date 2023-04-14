@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Eigen/Dense>
 #include <complex>
 #include <fstream>
 #include <iostream>
@@ -8,7 +9,6 @@
 
 #include "Geometry/Point.h"
 #include "Geometry/Vector.h"
-#include "LinearAlgebra/Matrix.h"
 #include "Painter/Painter.h"
 
 template <size_t D>
@@ -48,9 +48,9 @@ class Lattice {
 
   size_t size() const { return m_nodes.size(); }
 
-  Matrix<int> AdjMatrix() const;
+  Eigen::MatrixXi AdjMatrix() const;
 
-  virtual Matrix<std::complex<double>> HoppingMatrix(Vector<D> k) const = 0;
+  virtual Eigen::MatrixXcd HoppingMatrix(Vector<D> k) const = 0;
   virtual void Plot(PainterBackend, std::ostream &) const = 0;
   virtual void PlotBandStructure(std::ostream &) const = 0;
 
@@ -59,8 +59,8 @@ class Lattice {
 };
 
 template <size_t D>
-Matrix<int> Lattice<D>::AdjMatrix() const {
-  Matrix<int> A(m_nodes.size(), m_nodes.size());
+Eigen::MatrixXi Lattice<D>::AdjMatrix() const {
+  Eigen::MatrixXi A = Eigen::MatrixXi::Zero(m_nodes.size(), m_nodes.size());
   for (size_t i = 0; i < m_nodes.size(); ++i) {
     for (auto edge : m_nodes[i].edges) {
       A(i, edge.dst) = 1;
@@ -74,7 +74,7 @@ class OneDimensionalLattice : public Lattice<1> {
  public:
   OneDimensionalLattice(Vector<1> a1) : m_a1(a1) { m_b1 = 2.0 * M_PI * Vector<1>(1.0 / a1[0]); }
 
-  Matrix<std::complex<double>> HoppingMatrix(Vector<1> k) const override;
+  Eigen::MatrixXcd HoppingMatrix(Vector<1> k) const override;
 
   void Plot(PainterBackend, std::ostream &) const override;
   void PlotBandStructure(std::ostream &) const override;
@@ -98,7 +98,7 @@ class TwoDimensionalLattice : public Lattice<2> {
   Vector<2> b1() const { return m_b1; }
   Vector<2> b2() const { return m_b2; }
 
-  Matrix<std::complex<double>> HoppingMatrix(Vector<2> k) const override;
+  Eigen::MatrixXcd HoppingMatrix(Vector<2> k) const override;
 
   void Plot(PainterBackend, std::ostream &) const override;
   void PlotBandStructure(std::ostream &) const override;

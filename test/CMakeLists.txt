@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION 3.23)
 add_executable(cctb-test
     test-lattice.cpp
     test-geometry.cpp
-    test-array.cpp
-    test-matrix.cpp
 )
 
 target_compile_options(
@@ -14,7 +12,6 @@ target_compile_options(
 )
 
 target_include_directories(cctb-test PRIVATE .)
-
 
 target_link_libraries(cctb-test
     PRIVATE
