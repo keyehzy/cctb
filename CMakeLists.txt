@@ -22,14 +22,11 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Eigen3)
 include_directories(${Eigen3_SOURCE_DIR})
 
-
 add_subdirectory(third-party)
-
 add_subdirectory(src)
 
 if (BUILD_TESTING)
    include(CTest)
    add_subdirectory(test)
 endif()
-
 

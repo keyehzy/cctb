@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.23)
 
-find_package(BLAS REQUIRED)
-find_package(LAPACK REQUIRED)
-
 add_executable(
     cctb
     main.cpp
