@@ -1,41 +1,50 @@
+#include <Eigen/Dense>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <catch2/matchers/catch_matchers_templated.hpp>
 #include <complex>
 
-#include "Geometry/Point.h"
 #include "Lattice/Lattice.h"
 #include "TestMatchers.h"
 
-class LinearChainTest : public OneDimensionalLattice {
+class LinearChainTest : public OneDimensionalLattice<1> {
  public:
-  LinearChainTest(size_t size) : OneDimensionalLattice(Vector<1>(1.0 * static_cast<double>(size))) {
+  using NumberType = double;
+  using ComplexType = std::complex<NumberType>;
+  using VectorType = Eigen::Vector<NumberType, 1>;
+  using MatrixType = Eigen::Matrix<NumberType, 1, 1>;
+
+  LinearChainTest(size_t size)
+      : OneDimensionalLattice(VectorType(1.0 * static_cast<double>(size))) {
+    MatrixType onsite = MatrixType::Zero();
+    MatrixType hopping = MatrixType::Identity();
+
     for (size_t i = 0; i < size; i++) {
-      add_site(Point<1>(static_cast<double>(i)));
+      add_site(i, VectorType(static_cast<double>(i)), onsite);
     }
     for (size_t i = 0; i < size - 1; i++) {
-      add_edge(i, i + 1, {0}, 1.0);
+      add_edge(i, i + 1, {0}, hopping);
     }
     // if periodic, add the last edge
-    add_edge(size - 1, 0, {1}, 1.0);
+    add_edge(size - 1, 0, {1}, hopping);
   }
 };
 
 TEST_CASE("LinearChain", "[lattice]") {
   LinearChainTest lattice(2);
   REQUIRE(lattice.size() == 2);
-  REQUIRE(lattice.site(0).position == Point<1>(0));
-  REQUIRE(lattice.site(0).size() == 1);
-  REQUIRE(lattice.site(0).edge(0).dst == 1);
-  REQUIRE(lattice.site(0).edge(0).offset == std::array<int, 1>{0});
-  REQUIRE_THAT(lattice.site(0).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
-  REQUIRE(lattice.site(1).position == Point<1>(1));
-  REQUIRE(lattice.site(1).size() == 1);
-  REQUIRE(lattice.site(1).edge(0).dst == 0);
-  REQUIRE(lattice.site(1).edge(0).offset == std::array<int, 1>{1});
-  REQUIRE_THAT(lattice.site(1).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
+  REQUIRE(lattice.site(0).index() == 0);
+  REQUIRE(lattice.site(0).position() == LinearChainTest::VectorType(0));
+  REQUIRE(lattice.edge(0).src() == 0);
+  REQUIRE(lattice.edge(0).dst() == 1);
+  REQUIRE(lattice.edge(0).basis_index(0) == 0);
+  REQUIRE(lattice.site(1).index() == 1);
+  REQUIRE(lattice.site(1).position() == LinearChainTest::VectorType(1));
+  REQUIRE(lattice.edge(1).src() == 1);
+  REQUIRE(lattice.edge(1).dst() == 0);
+  REQUIRE(lattice.edge(1).basis_index(0) == 1);
 
-  Eigen::MatrixXi adj_matrix = lattice.AdjMatrix();
+  Eigen::MatrixXi adj_matrix = lattice.graph().adj_matrix();
   REQUIRE(adj_matrix.rows() == 2);
   REQUIRE(adj_matrix.cols() == 2);
   REQUIRE(adj_matrix(0, 0) == 0);
@@ -43,7 +52,7 @@ TEST_CASE("LinearChain", "[lattice]") {
   REQUIRE(adj_matrix(1, 0) == 1);
   REQUIRE(adj_matrix(1, 1) == 0);
 
-  Eigen::MatrixXcd hopping_matrix = lattice.HoppingMatrix(0.5);
+  Eigen::MatrixXcd hopping_matrix = lattice.hopping_matrix(LinearChainTest::VectorType(0.5));
   REQUIRE(hopping_matrix.rows() == 2);
   REQUIRE(hopping_matrix.cols() == 2);
   REQUIRE(hopping_matrix(0, 0) == std::complex<double>(0, 0));
@@ -61,12 +70,20 @@ TEST_CASE("LinearChain", "[lattice]") {
   REQUIRE_THAT(w[1], Catch::Matchers::WithinAbs(2.0 * cos(0.5), 1e-10));
 }
 
-class SquareLatticeTest : public TwoDimensionalLattice {
+class SquareLatticeTest : public TwoDimensionalLattice<1> {
  public:
-  SquareLatticeTest() : TwoDimensionalLattice(Vector<2>{1.0, 0}, Vector<2>(0, 1.0)) {
-    add_site(Point<2>(0, 0));
-    add_edge(0, 0, {0, 1}, 1.0);
-    add_edge(0, 0, {1, 0}, 1.0);
+  using NumberType = double;
+  using ComplexType = std::complex<NumberType>;
+  using VectorType = Eigen::Vector<NumberType, 2>;
+  using MatrixType = Eigen::Matrix<NumberType, 1, 1>;
+
+  SquareLatticeTest() : TwoDimensionalLattice(VectorType(1.0, 0), VectorType(0, 1.0)) {
+    MatrixType onsite = MatrixType::Zero();
+    MatrixType hopping = MatrixType::Identity();
+
+    add_site(0, VectorType(0, 0), onsite);
+    add_edge(0, 0, {0, 1}, hopping);
+    add_edge(0, 0, {1, 0}, hopping);
   }
 };
 
@@ -74,21 +91,23 @@ TEST_CASE("SquareLattice", "[lattice]") {
   SquareLatticeTest lattice;
   REQUIRE(lattice.size() == 1);
 
-  REQUIRE(lattice.site(0).position == Point<2>(0, 0));
-  REQUIRE(lattice.site(0).size() == 2);
-  REQUIRE(lattice.site(0).edge(0).dst == 0);
-  REQUIRE(lattice.site(0).edge(0).offset == std::array<int, 2>{0, 1});
-  REQUIRE_THAT(lattice.site(0).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
-  REQUIRE(lattice.site(0).edge(1).dst == 0);
-  REQUIRE(lattice.site(0).edge(1).offset == std::array<int, 2>{1, 0});
-  REQUIRE_THAT(lattice.site(0).edge(1).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
+  REQUIRE(lattice.site(0).index() == 0);
+  REQUIRE(lattice.site(0).position() == SquareLatticeTest::VectorType(0, 0));
+  REQUIRE(lattice.edge(0).src() == 0);
+  REQUIRE(lattice.edge(0).dst() == 0);
+  REQUIRE(lattice.edge(0).basis_index(0) == 0);
+  REQUIRE(lattice.edge(0).basis_index(1) == 1);
+  REQUIRE(lattice.edge(1).src() == 0);
+  REQUIRE(lattice.edge(1).dst() == 0);
+  REQUIRE(lattice.edge(1).basis_index(0) == 1);
+  REQUIRE(lattice.edge(1).basis_index(1) == 0);
 
-  Eigen::MatrixXi adj_matrix = lattice.AdjMatrix();
+  Eigen::MatrixXi adj_matrix = lattice.graph().adj_matrix();
   REQUIRE(adj_matrix.rows() == 1);
   REQUIRE(adj_matrix.cols() == 1);
   REQUIRE(adj_matrix(0, 0) == 1);
 
-  Eigen::MatrixXcd hopping_matrix = lattice.HoppingMatrix(Vector<2>{0.5, 0.8});
+  Eigen::MatrixXcd hopping_matrix = lattice.hopping_matrix(SquareLatticeTest::VectorType(0.5, 0.8));
   REQUIRE(hopping_matrix.rows() == 1);
   REQUIRE(hopping_matrix.cols() == 1);
   REQUIRE(hopping_matrix(0, 0) == std::complex<double>(2.0 * cos(0.5) + 2.0 * cos(0.8), 0));
@@ -101,42 +120,60 @@ TEST_CASE("SquareLattice", "[lattice]") {
   REQUIRE_THAT(w[0], Catch::Matchers::WithinAbs(2.0 * cos(0.5) + 2.0 * cos(0.8), 1e-10));
 }
 
-class GrapheneLatticeTest : public TwoDimensionalLattice {
+class GrapheneLatticeTest : public TwoDimensionalLattice<1> {
  public:
+  using NumberType = double;
+  using ComplexType = std::complex<NumberType>;
+  using VectorType = Eigen::Vector<NumberType, 2>;
+  using MatrixType = Eigen::Matrix<NumberType, 1, 1>;
+
   GrapheneLatticeTest()
-      : TwoDimensionalLattice(Vector<2>(1.5, 0.5 * sqrt(3.0)), Vector<2>(1.5, -0.5 * sqrt(3.0))) {
-    add_site(Point<2>{0, 0});
-    add_site(Point<2>{0.5, 0.5 * sqrt(3.0)});
-    add_edge(0, 1, {0, 0}, 1.0);
-    add_edge(1, 0, {1, 0}, 1.0);
-    add_edge(1, 0, {1, -1}, 1.0);
+      : TwoDimensionalLattice(VectorType(1.5, 0.5 * sqrt(3.0)), VectorType(1.5, -0.5 * sqrt(3.0))) {
+    MatrixType onsite = MatrixType::Zero();
+    MatrixType hopping = MatrixType::Identity();
+    add_site(0, VectorType(0, 0), onsite);
+    add_site(1, VectorType(0.5, 0.5 * sqrt(3.0)), onsite);
+    add_edge(0, 1, {0, 0}, hopping);
+    add_edge(1, 0, {1, 0}, hopping);
+    add_edge(1, 0, {1, -1}, hopping);
   }
 };
 
 TEST_CASE("GrapheneLattice", "[lattice]") {
   GrapheneLatticeTest lattice;
-  REQUIRE(lattice.a1() == Vector<2>(1.5, 0.5 * sqrt(3.0)));
-  REQUIRE(lattice.a2() == Vector<2>(1.5, -0.5 * sqrt(3.0)));
-  REQUIRE_THAT(lattice.b1(), ApproxEqualVec(Vector<2>(2.0 * M_PI / 3.0, 2.0 * M_PI / sqrt(3.0))));
-  REQUIRE_THAT(lattice.b2(), ApproxEqualVec(Vector<2>(2.0 * M_PI / 3.0, -2.0 * M_PI / sqrt(3.0))));
+  REQUIRE(lattice.lattice_vector(0) == GrapheneLatticeTest::VectorType(1.5, 0.5 * sqrt(3.0)));
+  REQUIRE(lattice.lattice_vector(1) == GrapheneLatticeTest::VectorType(1.5, -0.5 * sqrt(3.0)));
+  REQUIRE_THAT((lattice.reciprocal_vector(0) -
+                GrapheneLatticeTest::VectorType(2.0 * M_PI / 3.0, 2.0 * M_PI / sqrt(3.0)))
+                   .norm(),
+               Catch::Matchers::WithinAbs(0.0, 1e-10));
+  REQUIRE_THAT((lattice.reciprocal_vector(1) -
+                GrapheneLatticeTest::VectorType(2.0 * M_PI / 3.0, -2.0 * M_PI / sqrt(3.0)))
+                   .norm(),
+               Catch::Matchers::WithinAbs(0.0, 1e-10));
 
   REQUIRE(lattice.size() == 2);
+  REQUIRE(lattice.site(0).index() == 0);
+  REQUIRE(lattice.site(0).position() == GrapheneLatticeTest::VectorType(0, 0));
+  REQUIRE(lattice.site(1).index() == 1);
+  REQUIRE(lattice.site(1).position() == GrapheneLatticeTest::VectorType(0.5, 0.5 * sqrt(3.0)));
 
-  REQUIRE(lattice.site(0).position == Point<2>{0, 0});
-  REQUIRE(lattice.site(0).size() == 1);
-  REQUIRE(lattice.site(0).edge(0).dst == 1);
-  REQUIRE(lattice.site(0).edge(0).offset == std::array<int, 2>{0, 0});
-  REQUIRE_THAT(lattice.site(0).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
+  REQUIRE(lattice.edge(0).src() == 0);
+  REQUIRE(lattice.edge(0).dst() == 1);
+  REQUIRE(lattice.edge(0).basis_index(0) == 0);
+  REQUIRE(lattice.edge(0).basis_index(1) == 0);
 
-  REQUIRE(lattice.site(1).position == Point<2>{0.5, 0.5 * sqrt(3.0)});
-  REQUIRE(lattice.site(1).size() == 2);
-  REQUIRE(lattice.site(1).edge(0).dst == 0);
-  REQUIRE(lattice.site(1).edge(0).offset == std::array<int, 2>{1, 0});
-  REQUIRE_THAT(lattice.site(1).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
-  REQUIRE(lattice.site(1).edge(1).dst == 0);
-  REQUIRE(lattice.site(1).edge(1).offset == std::array<int, 2>{1, -1});
+  REQUIRE(lattice.edge(1).src() == 1);
+  REQUIRE(lattice.edge(1).dst() == 0);
+  REQUIRE(lattice.edge(1).basis_index(0) == 1);
+  REQUIRE(lattice.edge(1).basis_index(1) == 0);
 
-  Eigen::MatrixXi adj_matrix = lattice.AdjMatrix();
+  REQUIRE(lattice.edge(2).src() == 1);
+  REQUIRE(lattice.edge(2).dst() == 0);
+  REQUIRE(lattice.edge(2).basis_index(0) == 1);
+  REQUIRE(lattice.edge(2).basis_index(1) == -1);
+
+  Eigen::MatrixXi adj_matrix = lattice.graph().adj_matrix();
   REQUIRE(adj_matrix.rows() == 2);
   REQUIRE(adj_matrix.cols() == 2);
   REQUIRE(adj_matrix(0, 0) == 0);
@@ -144,13 +181,13 @@ TEST_CASE("GrapheneLattice", "[lattice]") {
   REQUIRE(adj_matrix(1, 0) == 1);
   REQUIRE(adj_matrix(1, 1) == 0);
 
-  Vector<2> d1{0.5, 0.5 * sqrt(3.0)};
-  Vector<2> d2{0.5, -0.5 * sqrt(3.0)};
-  Vector<2> d3{-1.0, 0.0};
-  Vector<2> k{0.5, 0.8};
+  GrapheneLatticeTest::VectorType d1(0.5, 0.5 * sqrt(3.0));
+  GrapheneLatticeTest::VectorType d2(0.5, -0.5 * sqrt(3.0));
+  GrapheneLatticeTest::VectorType d3(-1.0, 0.0);
+  GrapheneLatticeTest::VectorType k(0.5, 0.8);
   std::complex<double> comp = std::complex<double>(0.0, 1.0);
 
-  Eigen::MatrixXcd hopping_matrix = lattice.HoppingMatrix(k);
+  Eigen::MatrixXcd hopping_matrix = lattice.hopping_matrix(k);
   REQUIRE(hopping_matrix.rows() == 2);
   REQUIRE(hopping_matrix.cols() == 2);
   REQUIRE(hopping_matrix(0, 0) == std::complex<double>(0, 0));
@@ -170,22 +207,29 @@ TEST_CASE("GrapheneLattice", "[lattice]") {
   REQUIRE_THAT(w[1], Catch::Matchers::WithinAbs(sqrt(3.0 + f_1), 1e-10));
 }
 
-class GrapheneLatticeExtendedTest : public TwoDimensionalLattice {
+class GrapheneLatticeExtendedTest : public TwoDimensionalLattice<1> {
  public:
+  using NumberType = double;
+  using ComplexType = std::complex<NumberType>;
+  using VectorType = Eigen::Vector<NumberType, 2>;
+  using MatrixType = Eigen::Matrix<NumberType, 1, 1>;
+
   GrapheneLatticeExtendedTest()
-      : TwoDimensionalLattice(Vector<2>(3.0, 0), Vector<2>(0, sqrt(3.0))) {
-    add_site(Point<2>{0, 0});
-    add_site(Point<2>{0.5, 0.5 * sqrt(3.0)});
-    add_site(Point<2>{1.5, 0.5 * sqrt(3.0)});
-    add_site(Point<2>{2.0, 0});
+      : TwoDimensionalLattice(VectorType(3.0, 0), VectorType(0, sqrt(3.0))) {
+    MatrixType onsite = MatrixType::Zero();
+    MatrixType hopping = MatrixType::Identity();
+    add_site(0, VectorType(0, 0), onsite);
+    add_site(1, VectorType(0.5, 0.5 * sqrt(3.0)), onsite);
+    add_site(2, VectorType(1.5, 0.5 * sqrt(3.0)), onsite);
+    add_site(3, VectorType(2.0, 0), onsite);
 
-    add_edge(0, 1, {0, 0}, 1.0);
-    add_edge(1, 2, {0, 0}, 1.0);
-    add_edge(2, 3, {0, 0}, 1.0);
+    add_edge(0, 1, {0, 0}, hopping);
+    add_edge(1, 2, {0, 0}, hopping);
+    add_edge(2, 3, {0, 0}, hopping);
 
-    add_edge(3, 0, {1, 0}, 1.0);
-    add_edge(1, 0, {0, 1}, 1.0);
-    add_edge(2, 3, {0, 1}, 1.0);
+    add_edge(3, 0, {1, 0}, hopping);
+    add_edge(1, 0, {0, 1}, hopping);
+    add_edge(2, 3, {0, 1}, hopping);
   }
 };
 
@@ -193,37 +237,51 @@ TEST_CASE("GrapheneLatticeExtended", "[lattice]") {
   GrapheneLatticeExtendedTest lattice;
   REQUIRE(lattice.size() == 4);
 
-  REQUIRE(lattice.site(0).position == Point<2>{0, 0});
-  REQUIRE(lattice.site(0).size() == 1);
-  REQUIRE(lattice.site(0).edge(0).dst == 1);
-  REQUIRE(lattice.site(0).edge(0).offset == std::array<int, 2>{0, 0});
-  REQUIRE_THAT(lattice.site(0).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
+  REQUIRE(lattice.site(0).index() == 0);
+  REQUIRE(lattice.site(0).position() == GrapheneLatticeExtendedTest::VectorType{0, 0});
 
-  REQUIRE(lattice.site(1).position == Point<2>{0.5, 0.5 * sqrt(3.0)});
-  REQUIRE(lattice.site(1).size() == 2);
-  REQUIRE(lattice.site(1).edge(0).dst == 2);
-  REQUIRE(lattice.site(1).edge(0).offset == std::array<int, 2>{0, 0});
-  REQUIRE_THAT(lattice.site(1).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
-  REQUIRE(lattice.site(1).edge(1).dst == 0);
-  REQUIRE(lattice.site(1).edge(1).offset == std::array<int, 2>{0, 1});
-  REQUIRE_THAT(lattice.site(1).edge(1).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
+  REQUIRE(lattice.site(1).index() == 1);
+  REQUIRE(lattice.site(1).position() ==
+          GrapheneLatticeExtendedTest::VectorType{0.5, 0.5 * sqrt(3.0)});
 
-  REQUIRE(lattice.site(2).position == Point<2>{1.5, 0.5 * sqrt(3.0)});
-  REQUIRE(lattice.site(2).size() == 2);
-  REQUIRE(lattice.site(2).edge(0).dst == 3);
-  REQUIRE(lattice.site(2).edge(0).offset == std::array<int, 2>{0, 0});
-  REQUIRE_THAT(lattice.site(2).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
-  REQUIRE(lattice.site(2).edge(1).dst == 3);
-  REQUIRE(lattice.site(2).edge(1).offset == std::array<int, 2>{0, 1});
-  REQUIRE_THAT(lattice.site(2).edge(1).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
+  REQUIRE(lattice.site(2).index() == 2);
+  REQUIRE(lattice.site(2).position() ==
+          GrapheneLatticeExtendedTest::VectorType{1.5, 0.5 * sqrt(3.0)});
 
-  REQUIRE(lattice.site(3).position == Point<2>{2.0, 0});
-  REQUIRE(lattice.site(3).size() == 1);
-  REQUIRE(lattice.site(3).edge(0).dst == 0);
-  REQUIRE(lattice.site(3).edge(0).offset == std::array<int, 2>{1, 0});
-  REQUIRE_THAT(lattice.site(3).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
+  REQUIRE(lattice.site(3).index() == 3);
+  REQUIRE(lattice.site(3).position() == GrapheneLatticeExtendedTest::VectorType{2.0, 0});
 
-  Eigen::MatrixXi adj_matrix = lattice.AdjMatrix();
+  REQUIRE(lattice.edge(0).src() == 0);
+  REQUIRE(lattice.edge(0).dst() == 1);
+  REQUIRE(lattice.edge(0).basis_index(0) == 0);
+  REQUIRE(lattice.edge(0).basis_index(1) == 0);
+
+  REQUIRE(lattice.edge(1).src() == 1);
+  REQUIRE(lattice.edge(1).dst() == 2);
+  REQUIRE(lattice.edge(1).basis_index(0) == 0);
+  REQUIRE(lattice.edge(1).basis_index(1) == 0);
+
+  REQUIRE(lattice.edge(2).src() == 2);
+  REQUIRE(lattice.edge(2).dst() == 3);
+  REQUIRE(lattice.edge(2).basis_index(0) == 0);
+  REQUIRE(lattice.edge(2).basis_index(1) == 0);
+
+  REQUIRE(lattice.edge(3).src() == 3);
+  REQUIRE(lattice.edge(3).dst() == 0);
+  REQUIRE(lattice.edge(3).basis_index(0) == 1);
+  REQUIRE(lattice.edge(3).basis_index(1) == 0);
+
+  REQUIRE(lattice.edge(4).src() == 1);
+  REQUIRE(lattice.edge(4).dst() == 0);
+  REQUIRE(lattice.edge(4).basis_index(0) == 0);
+  REQUIRE(lattice.edge(4).basis_index(1) == 1);
+
+  REQUIRE(lattice.edge(5).src() == 2);
+  REQUIRE(lattice.edge(5).dst() == 3);
+  REQUIRE(lattice.edge(5).basis_index(0) == 0);
+  REQUIRE(lattice.edge(5).basis_index(1) == 1);
+
+  Eigen::MatrixXi adj_matrix = lattice.graph().adj_matrix();
   REQUIRE(adj_matrix.rows() == 4);
   REQUIRE(adj_matrix.cols() == 4);
   REQUIRE(adj_matrix(0, 0) == 0);
@@ -244,14 +302,21 @@ TEST_CASE("GrapheneLatticeExtended", "[lattice]") {
   REQUIRE(adj_matrix(3, 3) == 0);
 }
 
-class TriangularLatticeTest : public TwoDimensionalLattice {
+class TriangularLatticeTest : public TwoDimensionalLattice<1> {
  public:
-  TriangularLatticeTest(double a = 1.0)
-      : TwoDimensionalLattice(Vector<2>(a, 0), Vector<2>(0.5 * a, 0.5 * a * sqrt(3.0))) {
-    add_site(Point<2>{0, 0});
-    add_edge(0, 0, {1, 0}, 1.0);
-    add_edge(0, 0, {0, 1}, 1.0);
-    add_edge(0, 0, {1, -1}, 1.0);
+  using NumberType = double;
+  using ComplexType = std::complex<NumberType>;
+  using VectorType = Eigen::Vector<NumberType, 2>;
+  using MatrixType = Eigen::Matrix<NumberType, 1, 1>;
+
+  TriangularLatticeTest()
+      : TwoDimensionalLattice(VectorType(1, 0), VectorType(0.5, 0.5 * sqrt(3.0))) {
+    MatrixType onsite = MatrixType::Zero();
+    MatrixType hopping = MatrixType::Identity();
+    add_site(0, VectorType(0, 0), onsite);
+    add_edge(0, 0, {1, 0}, hopping);
+    add_edge(0, 0, {0, 1}, hopping);
+    add_edge(0, 0, {1, -1}, hopping);
   }
 };
 
@@ -259,36 +324,51 @@ TEST_CASE("TriangularLattice", "[lattice]") {
   TriangularLatticeTest lattice;
   REQUIRE(lattice.size() == 1);
 
-  REQUIRE(lattice.site(0).position == Point<2>{0, 0});
-  REQUIRE(lattice.site(0).size() == 3);
-  REQUIRE(lattice.site(0).edge(0).dst == 0);
-  REQUIRE(lattice.site(0).edge(0).offset == std::array<int, 2>{1, 0});
-  REQUIRE_THAT(lattice.site(0).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
-  REQUIRE(lattice.site(0).edge(1).dst == 0);
-  REQUIRE(lattice.site(0).edge(1).offset == std::array<int, 2>{0, 1});
-  REQUIRE_THAT(lattice.site(0).edge(1).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
-  REQUIRE(lattice.site(0).edge(2).dst == 0);
-  REQUIRE(lattice.site(0).edge(2).offset == std::array<int, 2>{1, -1});
-  REQUIRE_THAT(lattice.site(0).edge(2).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
+  REQUIRE(lattice.site(0).index() == 0);
+  REQUIRE(lattice.site(0).position() == TriangularLatticeTest::VectorType{0, 0});
 
-  Eigen::MatrixXi adj_matrix = lattice.AdjMatrix();
+  REQUIRE(lattice.edge(0).src() == 0);
+  REQUIRE(lattice.edge(0).dst() == 0);
+  REQUIRE(lattice.edge(0).basis_index(0) == 1);
+  REQUIRE(lattice.edge(0).basis_index(1) == 0);
+
+  REQUIRE(lattice.edge(1).src() == 0);
+  REQUIRE(lattice.edge(1).dst() == 0);
+  REQUIRE(lattice.edge(1).basis_index(0) == 0);
+  REQUIRE(lattice.edge(1).basis_index(1) == 1);
+
+  REQUIRE(lattice.edge(2).src() == 0);
+  REQUIRE(lattice.edge(2).dst() == 0);
+  REQUIRE(lattice.edge(2).basis_index(0) == 1);
+  REQUIRE(lattice.edge(2).basis_index(1) == -1);
+
+  Eigen::MatrixXi adj_matrix = lattice.graph().adj_matrix();
   REQUIRE(adj_matrix.rows() == 1);
   REQUIRE(adj_matrix.cols() == 1);
   REQUIRE(adj_matrix(0, 0) == 1);
+
+  // TODO: test eigenvalues with closed form
 }
 
-class KagomeLatticeTest : public TwoDimensionalLattice {
+class KagomeLatticeTest : public TwoDimensionalLattice<1> {
  public:
-  KagomeLatticeTest() : TwoDimensionalLattice(Vector<2>(2, 0), Vector<2>(1.0, sqrt(3.0))) {
-    add_site(Point<2>{0, 0});
-    add_site(Point<2>{1.0, 0});
-    add_site(Point<2>{0.5, 0.5 * sqrt(3.0)});
-    add_edge(0, 1, {0, 0}, 1.0);
-    add_edge(1, 2, {0, 0}, 1.0);
-    add_edge(2, 0, {0, 0}, 1.0);
-    add_edge(1, 0, {1, 0}, 1.0);
-    add_edge(2, 0, {0, 1}, 1.0);
-    add_edge(1, 2, {1, -1}, 1.0);
+  using NumberType = double;
+  using ComplexType = std::complex<NumberType>;
+  using VectorType = Eigen::Vector<NumberType, 2>;
+  using MatrixType = Eigen::Matrix<NumberType, 1, 1>;
+
+  KagomeLatticeTest() : TwoDimensionalLattice(VectorType(2, 0), VectorType(1.0, sqrt(3.0))) {
+    MatrixType onsite = MatrixType::Zero();
+    MatrixType hopping = MatrixType::Identity();
+    add_site(0, VectorType(0, 0), onsite);
+    add_site(1, VectorType(1.0, 0), onsite);
+    add_site(2, VectorType(0.5, 0.5 * sqrt(3.0)), onsite);
+    add_edge(0, 1, {0, 0}, hopping);
+    add_edge(1, 2, {0, 0}, hopping);
+    add_edge(2, 0, {0, 0}, hopping);
+    add_edge(1, 0, {1, 0}, hopping);
+    add_edge(2, 0, {0, 1}, hopping);
+    add_edge(1, 2, {1, -1}, hopping);
   }
 };
 
@@ -296,34 +376,46 @@ TEST_CASE("KagomeLattice", "[lattice]") {
   KagomeLatticeTest lattice;
   REQUIRE(lattice.size() == 3);
 
-  REQUIRE(lattice.site(0).position == Point<2>{0, 0});
-  REQUIRE(lattice.site(0).size() == 1);
-  REQUIRE(lattice.site(0).edge(0).dst == 1);
-  REQUIRE(lattice.site(0).edge(0).offset == std::array<int, 2>{0, 0});
-  REQUIRE_THAT(lattice.site(0).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
+  REQUIRE(lattice.site(0).index() == 0);
+  REQUIRE(lattice.site(0).position() == KagomeLatticeTest::VectorType{0, 0});
 
-  REQUIRE(lattice.site(1).position == Point<2>{1.0, 0});
-  REQUIRE(lattice.site(1).size() == 3);
-  REQUIRE(lattice.site(1).edge(0).dst == 2);
-  REQUIRE(lattice.site(1).edge(0).offset == std::array<int, 2>{0, 0});
-  REQUIRE_THAT(lattice.site(1).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
-  REQUIRE(lattice.site(1).edge(1).dst == 0);
-  REQUIRE(lattice.site(1).edge(1).offset == std::array<int, 2>{1, 0});
-  REQUIRE_THAT(lattice.site(1).edge(1).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
-  REQUIRE(lattice.site(1).edge(2).dst == 2);
-  REQUIRE(lattice.site(1).edge(2).offset == std::array<int, 2>{1, -1});
-  REQUIRE_THAT(lattice.site(1).edge(2).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
+  REQUIRE(lattice.site(1).index() == 1);
+  REQUIRE(lattice.site(1).position() == KagomeLatticeTest::VectorType{1, 0});
 
-  REQUIRE(lattice.site(2).position == Point<2>{0.5, 0.5 * sqrt(3.0)});
-  REQUIRE(lattice.site(2).size() == 2);
-  REQUIRE(lattice.site(2).edge(0).dst == 0);
-  REQUIRE(lattice.site(2).edge(0).offset == std::array<int, 2>{0, 0});
-  REQUIRE_THAT(lattice.site(2).edge(0).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
-  REQUIRE(lattice.site(2).edge(1).dst == 0);
-  REQUIRE(lattice.site(2).edge(1).offset == std::array<int, 2>{0, 1});
-  REQUIRE_THAT(lattice.site(2).edge(1).weight, Catch::Matchers::WithinAbs(1.0, 1e-10));
+  REQUIRE(lattice.site(2).index() == 2);
+  REQUIRE(lattice.site(2).position() == KagomeLatticeTest::VectorType{0.5, 0.5 * sqrt(3.0)});
 
-  Eigen::MatrixXi adj_matrix = lattice.AdjMatrix();
+  REQUIRE(lattice.edge(0).src() == 0);
+  REQUIRE(lattice.edge(0).dst() == 1);
+  REQUIRE(lattice.edge(0).basis_index(0) == 0);
+  REQUIRE(lattice.edge(0).basis_index(1) == 0);
+
+  REQUIRE(lattice.edge(1).src() == 1);
+  REQUIRE(lattice.edge(1).dst() == 2);
+  REQUIRE(lattice.edge(1).basis_index(0) == 0);
+  REQUIRE(lattice.edge(1).basis_index(1) == 0);
+
+  REQUIRE(lattice.edge(2).src() == 2);
+  REQUIRE(lattice.edge(2).dst() == 0);
+  REQUIRE(lattice.edge(2).basis_index(0) == 0);
+  REQUIRE(lattice.edge(2).basis_index(1) == 0);
+
+  REQUIRE(lattice.edge(3).src() == 1);
+  REQUIRE(lattice.edge(3).dst() == 0);
+  REQUIRE(lattice.edge(3).basis_index(0) == 1);
+  REQUIRE(lattice.edge(3).basis_index(1) == 0);
+
+  REQUIRE(lattice.edge(4).src() == 2);
+  REQUIRE(lattice.edge(4).dst() == 0);
+  REQUIRE(lattice.edge(4).basis_index(0) == 0);
+  REQUIRE(lattice.edge(4).basis_index(1) == 1);
+
+  REQUIRE(lattice.edge(5).src() == 1);
+  REQUIRE(lattice.edge(5).dst() == 2);
+  REQUIRE(lattice.edge(5).basis_index(0) == 1);
+  REQUIRE(lattice.edge(5).basis_index(1) == -1);
+
+  Eigen::MatrixXi adj_matrix = lattice.graph().adj_matrix();
   REQUIRE(adj_matrix.rows() == 3);
   REQUIRE(adj_matrix.cols() == 3);
   REQUIRE(adj_matrix(0, 0) == 0);
@@ -335,4 +427,6 @@ TEST_CASE("KagomeLattice", "[lattice]") {
   REQUIRE(adj_matrix(2, 0) == 1);
   REQUIRE(adj_matrix(2, 1) == 1);
   REQUIRE(adj_matrix(2, 2) == 0);
+
+  // TODO: test eigenvalues with closed form
 }

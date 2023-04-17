@@ -152,6 +152,10 @@ class Lattice {
     m_graph.add_edge(EdgeType(src, dst, basis_index, hopping));
   }
 
+  const NodeType &site(size_t i) const { return m_graph.node(i); }
+
+  const EdgeType &edge(size_t i) const { return m_graph.edge(i); }
+
   size_t size() const { return m_graph.size() * Orbitals; }
 
   size_t orbitals() const { return Orbitals; }
@@ -161,6 +165,12 @@ class Lattice {
   GraphType &graph() { return m_graph; }
 
   const std::array<VectorType, Dimension> &basis() const { return m_basis; }
+
+  const std::array<VectorType, Dimension> &reciprocal_basis() const { return m_reciprocal_basis; }
+
+  const VectorType &lattice_vector(size_t i) const { return m_basis[i]; }
+
+  const VectorType &reciprocal_vector(size_t i) const { return m_reciprocal_basis[i]; }
 
   void statistics() {
     std::cout << "Lattice statistics:" << std::endl;
@@ -235,6 +245,8 @@ class OneDimensionalLattice : public Lattice<1, Orbitals> {
   // void PlotBrillouinZone(std::ostream &) const;
 };
 
+using SingleOrbitalOneDimensionalLattice = OneDimensionalLattice<1>;
+
 template <size_t Orbitals>
 class TwoDimensionalLattice : public Lattice<2, Orbitals> {
  public:
@@ -249,25 +261,27 @@ class TwoDimensionalLattice : public Lattice<2, Orbitals> {
   // void PlotBrillouinZone(PainterBackend, std::ostream &) const;
 };
 
+using SingleOrbitalTwoDimensionalLattice = TwoDimensionalLattice<1>;
+
 /*
-template <size_t Orbitals>
-void OneDimensionalLattice<Orbitals>::Plot(PainterBackend backend, std::ostream &out) const {
+  template <size_t Orbitals>
+  void OneDimensionalLattice<Orbitals>::Plot(PainterBackend backend, std::ostream &out) const {
   auto plotter = PainterFactory::create(backend, out);
   plotter->Prepare();
   for (const auto &site : sites()) {
-    for (int i = -1; i <= 1; i++) {
-      Point<1> p = site.position.translated(i * m_a1);
-      plotter->DrawPoint(p[0], 0.0);
-      for (const auto &edge : site.edges) {
-        Point<1> to_position = this->site(edge.dst).position.translated(edge.offset[0] * m_a1);
-        plotter->DrawLine(p[0], 0.0, to_position[0], 0.0);
-      }
-    }
+  for (int i = -1; i <= 1; i++) {
+  Point<1> p = site.position.translated(i * m_a1);
+  plotter->DrawPoint(p[0], 0.0);
+  for (const auto &edge : site.edges) {
+  Point<1> to_position = this->site(edge.dst).position.translated(edge.offset[0] * m_a1);
+  plotter->DrawLine(p[0], 0.0, to_position[0], 0.0);
+  }
+  }
   }
   plotter->Finish();
-}
+  }
 
-void OneDimensionalLattice::PlotBandStructure(std::ostream &out) const {
+  void OneDimensionalLattice::PlotBandStructure(std::ostream &out) const {
   out << "\\documentclass[border=10pt]{standalone}" << '\n';
   out << "\\usepackage{pgfplots}" << '\n';
   out << "\\usepackage{pgfplotstable}" << '\n';
@@ -275,20 +289,20 @@ void OneDimensionalLattice::PlotBandStructure(std::ostream &out) const {
 
   int n = 25;
   for (int i = 0; i < n; i++) {
-    double k = m_b1[0] * i / static_cast<double>(n - 1);
-    auto Hk = HoppingMatrix(Vector<1>(k));
-    Eigen::Vector<double, 1> w(size());
-    Eigen::MatrixXcd v(size(), size());
-    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> solver(Hk);
-    w = solver.eigenvalues();
-    v = solver.eigenvectors();
+  double k = m_b1[0] * i / static_cast<double>(n - 1);
+  auto Hk = HoppingMatrix(Vector<1>(k));
+  Eigen::Vector<double, 1> w(size());
+  Eigen::MatrixXcd v(size(), size());
+  Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> solver(Hk);
+  w = solver.eigenvalues();
+  v = solver.eigenvectors();
 
 
-    out << k;
-    for (int k = 0; k < size(); k++) {
-      out << " " << w[k];
-    }
-    out << '\n';
+  out << k;
+  for (int k = 0; k < size(); k++) {
+  out << " " << w[k];
+  }
+  out << '\n';
   }
 
   out << "}{\\data}" << '\n';
@@ -309,57 +323,57 @@ void OneDimensionalLattice::PlotBandStructure(std::ostream &out) const {
   out << "legend style={at={(1.3,0.5)},anchor=east}," << '\n';
   out << "legend entries={";
   for (int i = 0; i < size(); i++) {
-    out << "$E_" << i << "$";
-    if (i != size() - 1) {
-      out << ",";
-    }
+  out << "$E_" << i << "$";
+  if (i != size() - 1) {
+  out << ",";
+  }
   }
   out << "}," << '\n';
 
   out << "]" << '\n';
 
   for (int i = 0; i < size(); i++) {
-    out << "\\addplot+[mark=none, style=ultra thick] table[x index=0,y index=" << i + 1
-        << "] {\\data};" << '\n';
+  out << "\\addplot+[mark=none, style=ultra thick] table[x index=0,y index=" << i + 1
+  << "] {\\data};" << '\n';
   }
 
   out << "\\end{axis}" << '\n';
   out << "\\end{tikzpicture}" << '\n';
   out << "\\end{document}" << '\n';
-}
+  }
 
-void TwoDimensionalLattice::Plot(PainterBackend backend, std::ostream &out) const {
+  void TwoDimensionalLattice::Plot(PainterBackend backend, std::ostream &out) const {
   auto plotter = PainterFactory::create(backend, out);
   plotter->Prepare();
   for (const auto &site : sites()) {
-    for (int i = -1; i <= 1; i++) {
-      for (int j = -1; j <= 1; j++) {
-        Vector<2> offset = m_a1 * i + m_a2 * j;
-        Point<2> p = site.position.translated(offset);
-        plotter->DrawPoint(p[0], p[1]);
-      }
-    }
+  for (int i = -1; i <= 1; i++) {
+  for (int j = -1; j <= 1; j++) {
+  Vector<2> offset = m_a1 * i + m_a2 * j;
+  Point<2> p = site.position.translated(offset);
+  plotter->DrawPoint(p[0], p[1]);
+  }
+  }
   }
   for (int src = 0; src < size(); src++) {
-    for (const auto &edge : site(src).edges) {
-      for (int i = -1; i <= 1; i++) {
-        for (int j = -1; j <= 1; j++) {
-          Point<2> from_position = site(src).position.translated(m_a1 * i + m_a2 * j);
-          Point<2> to_position = site(edge.dst).position.translated(
-              m_a1 * i + m_a2 * j + m_a1 * edge.offset[0] + m_a2 * edge.offset[1]);
-          plotter->DrawLine(from_position[0], from_position[1], to_position[0], to_position[1]);
-        }
-      }
-    }
+  for (const auto &edge : site(src).edges) {
+  for (int i = -1; i <= 1; i++) {
+  for (int j = -1; j <= 1; j++) {
+  Point<2> from_position = site(src).position.translated(m_a1 * i + m_a2 * j);
+  Point<2> to_position = site(edge.dst).position.translated(
+  m_a1 * i + m_a2 * j + m_a1 * edge.offset[0] + m_a2 * edge.offset[1]);
+  plotter->DrawLine(from_position[0], from_position[1], to_position[0], to_position[1]);
+  }
+  }
+  }
   }
   plotter->DrawText(m_a1[0] / 2, m_a1[1] / 2 + 0.25, "$a_1$");
   plotter->DrawArrow(0, 0, m_a1[0], m_a1[1]);
   plotter->DrawText(m_a2[0] / 2, m_a2[1] / 2 - 0.25, "$a_2$");
   plotter->DrawArrow(0, 0, m_a2[0], m_a2[1]);
   plotter->Finish();
-}
+  }
 
-void TwoDimensionalLattice::PlotBrillouinZone(PainterBackend backend, std::ostream &out) const {
+  void TwoDimensionalLattice::PlotBrillouinZone(PainterBackend backend, std::ostream &out) const {
   auto plotter = PainterFactory::create(backend, out);
   plotter->Prepare();
 
@@ -425,9 +439,9 @@ void TwoDimensionalLattice::PlotBrillouinZone(PainterBackend backend, std::ostre
 
   plotter->DrawPoint(k3[0], k3[1]);
   plotter->Finish();
-}
+  }
 
-void TwoDimensionalLattice::PlotBandStructure(std::ostream &out) const {
+  void TwoDimensionalLattice::PlotBandStructure(std::ostream &out) const {
   out << "\\documentclass[border=10pt]{standalone}" << '\n';
   out << "\\usepackage{pgfplots}" << '\n';
   out << "\\usepackage{pgfplotstable}" << '\n';
@@ -435,23 +449,23 @@ void TwoDimensionalLattice::PlotBandStructure(std::ostream &out) const {
 
   int n = 25;
   for (int i = 0; i < n; i++) {
-    for (int j = 0; j < n; j++) {
-      double kx = (m_b1[0] * i + m_b2[0] * j) / static_cast<double>(n - 1);
-      double ky = (m_b1[1] * i + m_b2[1] * j) / static_cast<double>(n - 1);
-      auto Hk = HoppingMatrix(Vector<2>(kx, ky));
-      Eigen::VectorXd w(size());
-      Eigen::MatrixXcd v(size(), size());
-      Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> solver(Hk);
-      w = solver.eigenvalues();
-      v = solver.eigenvectors();
+  for (int j = 0; j < n; j++) {
+  double kx = (m_b1[0] * i + m_b2[0] * j) / static_cast<double>(n - 1);
+  double ky = (m_b1[1] * i + m_b2[1] * j) / static_cast<double>(n - 1);
+  auto Hk = HoppingMatrix(Vector<2>(kx, ky));
+  Eigen::VectorXd w(size());
+  Eigen::MatrixXcd v(size(), size());
+  Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> solver(Hk);
+  w = solver.eigenvalues();
+  v = solver.eigenvectors();
 
-      out << kx << " " << ky;
-      for (int k = 0; k < size(); k++) {
-        out << " " << w[k];
-      }
-      out << '\n';
-    }
-    out << '\n';
+  out << kx << " " << ky;
+  for (int k = 0; k < size(); k++) {
+  out << " " << w[k];
+  }
+  out << '\n';
+  }
+  out << '\n';
   }
 
   out << "}{\\data}" << '\n';
@@ -484,19 +498,19 @@ void TwoDimensionalLattice::PlotBandStructure(std::ostream &out) const {
   out << "]" << '\n';
 
   out << "\\pgfplotsinvokeforeach{0,...," << size() - 1
-      << "}{\\pgfplotscolormapdefinemappedcolor{\\the\\numexpr(#1)*1000/" << (size() - 1) << "}"
-      << '\n';
+  << "}{\\pgfplotscolormapdefinemappedcolor{\\the\\numexpr(#1)*1000/" << (size() - 1) << "}"
+  << '\n';
   out << "\\colorlet{leg#1}{mapped color}" << '\n';
   out << "\\addlegendimage{area legend,color=leg#1,fill}" << '\n';
   out << "\\addlegendentry{$E_{#1}$}}" << '\n';
 
   for (int i = 0; i < size(); i++) {
-    out << "\\addplot3[surf, mesh/ordering=y varies, mesh/rows=25, opacity=0.8, point meta=" << i
-        << "] table[x index=0,y index=1,z index=" << i + 2 << "] {\\data};" << '\n';
+  out << "\\addplot3[surf, mesh/ordering=y varies, mesh/rows=25, opacity=0.8, point meta=" << i
+  << "] table[x index=0,y index=1,z index=" << i + 2 << "] {\\data};" << '\n';
   }
 
   out << "\\end{axis}" << '\n';
   out << "\\end{tikzpicture}" << '\n';
   out << "\\end{document}" << '\n';
-}
+  }
 */

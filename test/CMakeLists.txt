@@ -16,6 +16,7 @@ target_include_directories(cctb-test PRIVATE .)
 target_link_libraries(cctb-test
     PRIVATE
     Catch2::Catch2WithMain
+    Eigen3::Eigen
     cctb-lib
 )
 

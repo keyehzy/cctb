@@ -11,22 +11,30 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CCTB_CXX_COMPILER_OPTIONS "" CACHE STRING "")
 mark_as_advanced(CCTB_CXX_COMPILER_OPTIONS)
 
-include(FetchContent)
-FetchContent_Declare(
-    Eigen3
-    GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
-    GIT_TAG        3.4.0
-    GIT_SHALLOW    TRUE
-    GIT_PROGRESS   TRUE
-)
-FetchContent_MakeAvailable(Eigen3)
-include_directories(${Eigen3_SOURCE_DIR})
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
 
 add_subdirectory(third-party)
 add_subdirectory(src)
 
 if (BUILD_TESTING)
-   include(CTest)
-   add_subdirectory(test)
-endif()
+    include(CTest)
+    add_subdirectory(test)
 
+    if (CCTB_ENABLE_COVERAGE)
+       include(CodeCoverage)
+   
+       target_compile_options(cctb-test PRIVATE --coverage)
+       target_link_libraries(cctb-test PRIVATE gcov)
+    
+       target_compile_options(cctb-lib PRIVATE --coverage)
+       target_link_libraries(cctb-lib PRIVATE gcov)
+    
+       setup_target_for_coverage_lcov(
+          NAME coverage
+          EXECUTABLE cctb-test
+          DEPENDENCIES cctb-lib
+          EXCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/third-party/*"
+       )
+    endif()
+endif()

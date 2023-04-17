@@ -7,76 +7,87 @@
 
 using namespace std::complex_literals;
 
-/*
-  class LinearChainTest : public OneDimensionalLattice {
-  public:
-  LinearChainTest(size_t size) : OneDimensionalLattice(Vector<1>(1.0 * static_cast<double>(size))) {
-  for (size_t i = 0; i < size; i++) {
-  add_site(Point<1>(static_cast<double>(i)));
-  }
-  for (size_t i = 0; i < size - 1; i++) {
-  add_edge(i, i + 1, {0}, 1.0);
-  }
-  // if periodic, add the last edge
-  add_edge(size - 1, 0, {1}, 1.0);
-  }
-  };
-
-  class GrapheneLatticeExtendedTest : public TwoDimensionalLattice {
-  public:
-  GrapheneLatticeExtendedTest()
-  : TwoDimensionalLattice(Vector<2>(3.0, 0), Vector<2>(0, sqrt(3.0))) {
-  add_site(Point<2>(0, 0));
-  add_site(Point<2>(0.5, 0.5 * sqrt(3.0)));
-  add_site(Point<2>(1.5, 0.5 * sqrt(3.0)));
-  add_site(Point<2>(2.0, 0));
-
-  // intra unit cell
-  add_edge(0, 1, {0, 0}, 1.0);
-  add_edge(1, 2, {0, 0}, 1.0);
-  add_edge(2, 3, {0, 0}, 1.0);
-
-  // inter unit cell
-  add_edge(3, 0, {1, 0}, 1.0);
-  add_edge(1, 0, {0, 1}, 1.0);
-  add_edge(2, 3, {0, 1}, 1.0);
-  }
-  };
-
-  class TriangularLatticeTest : public TwoDimensionalLattice {
-  public:
-  TriangularLatticeTest(double a = 1.0)
-  : TwoDimensionalLattice(Vector<2>(a, 0), Vector<2>(0.5 * a, 0.5 * a * sqrt(3.0))) {
-  add_site(Point<2>(0, 0));
-  add_edge(0, 0, {1, 0}, 1.0);
-
-  // intra unit cell
-  add_edge(0, 0, {0, 1}, 1.0);
-
-  // inter unit cell
-  add_edge(0, 0, {1, -1}, 1.0);
-  }
-  };
-*/
-class GrapheneLattice : public TwoDimensionalLattice<1> {
+class LinearChainTest : public SingleOrbitalOneDimensionalLattice {
  public:
   using NumberType = double;
   using Complex = std::complex<NumberType>;
   using Vector = Eigen::Vector<NumberType, 2>;
   using Matrix = Eigen::Matrix<Complex, 1, 1>;
 
-  GrapheneLattice()
-      : TwoDimensionalLattice(Vector(1.5, 0.5 * sqrt(3.0)), Vector(1.5, -0.5 * sqrt(3.0))) {
+  LinearChainTest(size_t size)
+      : OneDimensionalLattice(VectorType(1.0 * static_cast<double>(size))) {
     Matrix onsite = Matrix::Zero();
     Matrix hopping = Matrix::Identity();
 
-    add_site(0, Vector(0, 0), onsite);
-    add_site(0, Vector(0.5, 0.5 * sqrt(3)), onsite);
+    for (size_t i = 0; i < size; i++) {
+      add_site(0, VectorType(static_cast<double>(i)), onsite);
+    }
+    for (size_t i = 0; i < size - 1; i++) {
+      add_edge(i, i + 1, {0}, hopping);
+    }
+    // if periodic, add the last edge
+    add_edge(size - 1, 0, {1}, hopping);
+  }
+};
 
-    // intra unit cell
+class GrapheneLatticeExtendedTest : public TwoDimensionalLattice<1> {
+ public:
+  using NumberType = double;
+  using ComplexType = std::complex<NumberType>;
+  using VectorType = Eigen::Vector<NumberType, 2>;
+  using MatrixType = Eigen::Matrix<NumberType, 1, 1>;
+
+  GrapheneLatticeExtendedTest()
+      : TwoDimensionalLattice(VectorType(3.0, 0), VectorType(0, sqrt(3.0))) {
+    MatrixType onsite = MatrixType::Zero();
+    MatrixType hopping = MatrixType::Identity();
+    add_site(0, VectorType(0, 0), onsite);
+    add_site(1, VectorType(0.5, 0.5 * sqrt(3.0)), onsite);
+    add_site(2, VectorType(1.5, 0.5 * sqrt(3.0)), onsite);
+    add_site(3, VectorType(2.0, 0), onsite);
+
     add_edge(0, 1, {0, 0}, hopping);
+    add_edge(1, 2, {0, 0}, hopping);
+    add_edge(2, 3, {0, 0}, hopping);
 
-    // inter unit cell
+    add_edge(3, 0, {1, 0}, hopping);
+    add_edge(1, 0, {0, 1}, hopping);
+    add_edge(2, 3, {0, 1}, hopping);
+  }
+};
+
+class TriangularLatticeTest : public TwoDimensionalLattice<1> {
+ public:
+  using NumberType = double;
+  using ComplexType = std::complex<NumberType>;
+  using VectorType = Eigen::Vector<NumberType, 2>;
+  using MatrixType = Eigen::Matrix<NumberType, 1, 1>;
+
+  TriangularLatticeTest()
+      : TwoDimensionalLattice(VectorType(1, 0), VectorType(0.5, 0.5 * sqrt(3.0))) {
+    MatrixType onsite = MatrixType::Zero();
+    MatrixType hopping = MatrixType::Identity();
+    add_site(0, VectorType(0, 0), onsite);
+    add_edge(0, 0, {1, 0}, hopping);
+    add_edge(0, 0, {0, 1}, hopping);
+    add_edge(0, 0, {1, -1}, hopping);
+  }
+};
+
+class GrapheneLatticeTest : public TwoDimensionalLattice<1> {
+ public:
+  using NumberType = double;
+  using ComplexType = std::complex<NumberType>;
+  using VectorType = Eigen::Vector<NumberType, 2>;
+  using MatrixType = Eigen::Matrix<NumberType, 1, 1>;
+
+  GrapheneLatticeTest()
+      : TwoDimensionalLattice(VectorType(1.5, 0.5 * sqrt(3.0)), VectorType(1.5, -0.5 * sqrt(3.0))) {
+    MatrixType onsite = MatrixType::Zero();
+    MatrixType hopping = MatrixType::Identity();
+    add_site(0, VectorType(0, 0), onsite);
+    add_site(1, VectorType(0.5, 0.5 * sqrt(3.0)), onsite);
+    add_edge(0, 1, {0, 0}, hopping);
     add_edge(1, 0, {1, 0}, hopping);
     add_edge(1, 0, {1, -1}, hopping);
   }
