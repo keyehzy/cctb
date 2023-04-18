@@ -172,59 +172,9 @@ class Lattice {
 
   const VectorType &reciprocal_vector(size_t i) const { return m_reciprocal_basis[i]; }
 
-  void statistics() {
-    std::cout << "Lattice statistics:" << std::endl;
-    std::cout << "  Sites: " << m_graph.size() << std::endl;
-    std::cout << "  Dimension: " << Dimension << std::endl;
-    std::cout << "  Orbitals: " << Orbitals << std::endl;
-    std::cout << "  Total size: " << size() << std::endl;
-
-    std::cout << "  Basis vectors:" << std::endl;
-    for (size_t i = 0; i < Dimension; ++i) {
-      std::cout << "    " << i << ": " << m_basis[i].transpose() << std::endl;
-    }
-
-    std::cout << "  Reciprocal basis vectors:" << std::endl;
-    for (size_t i = 0; i < Dimension; ++i) {
-      std::cout << "    " << i << ": " << m_reciprocal_basis[i].transpose() << std::endl;
-    }
-
-    std::cout << "  Sites: " << m_graph.size() << std::endl;
-
-    for (size_t i = 0; i < m_graph.size(); ++i) {
-      std::cout << "    " << i << ": " << m_graph.node(i).position().transpose() << std::endl;
-    }
-
-    std::cout << "  Hoppings: " << m_graph.edges().size() << std::endl;
-
-    for (size_t i = 0; i < m_graph.edges().size(); ++i) {
-      std::cout << "    " << i << ": " << m_graph.edge(i).src() << " -> " << m_graph.edge(i).dst()
-                << std::endl;
-    }
-
-    std::cout << "  Adjacency matrix:" << std::endl;
-    std::cout << m_graph.adj_matrix() << std::endl;
-
-    std::cout << "  Hoping matrix at k = (0.5, 0.8):" << std::endl;
-    std::cout << hopping_matrix(VectorType(0.5, 0.8)) << std::endl;
-
-    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> solver(hopping_matrix(VectorType(0.5, 0.8)));
-    std::cout << "  Eigenvalues at k = (0.5, 0.8):" << std::endl;
-
-    for (size_t i = 0; i < solver.eigenvalues().size(); ++i) {
-      std::cout << "    " << i << ": " << solver.eigenvalues()[i] << std::endl;
-    }
-
-    std::cout << "  Eigenvectors at k = (0.5, 0.8):" << std::endl;
-
-    for (size_t i = 0; i < solver.eigenvalues().size(); ++i) {
-      std::cout << "    " << i << ": " << solver.eigenvectors().col(i).transpose() << std::endl;
-    }
-  }
-
-  // virtual void Plot(PainterBackend, std::ostream &) const;
-  // virtual void PlotBandStructure(std::ostream &) const;
-  // virtual void PlotBrillouinZone(std::ostream &) const;
+  virtual void Plot(PainterBackend, std::ostream &) const;
+  virtual void PlotBandStructure(std::ostream &) const;
+  virtual void PlotBrillouinZone(std::ostream &) const;
 
  private:
   GraphType m_graph;
@@ -237,15 +187,17 @@ class OneDimensionalLattice : public Lattice<1, Orbitals> {
  public:
   using NumberType = double;
   using VectorType = Eigen::Vector<NumberType, 1>;
+  using NodeType = Node<double, 1, Orbitals>;
 
   explicit OneDimensionalLattice(VectorType basis) : Lattice<1, Orbitals>({basis}) {}
 
-  // void Plot(PainterBackend, std::ostream &) const override;
-  // void PlotBandStructure(std::ostream &) const override;
-  // void PlotBrillouinZone(std::ostream &) const;
+  void Plot(PainterBackend, std::ostream &) const override;
+  void PlotBandStructure(std::ostream &) const override;
+  void PlotBrillouinZone(std::ostream &) const;
 };
 
 using SingleOrbitalOneDimensionalLattice = OneDimensionalLattice<1>;
+using SpinfulOneDimensionalLattice = OneDimensionalLattice<2>;
 
 template <size_t Orbitals>
 class TwoDimensionalLattice : public Lattice<2, Orbitals> {
@@ -256,31 +208,35 @@ class TwoDimensionalLattice : public Lattice<2, Orbitals> {
   explicit TwoDimensionalLattice(VectorType basis1, VectorType basis2)
       : Lattice<2, Orbitals>({basis1, basis2}) {}
 
-  // void Plot(PainterBackend, std::ostream &) const override;
-  // void PlotBandStructure(std::ostream &) const override;
-  // void PlotBrillouinZone(PainterBackend, std::ostream &) const;
+  void Plot(PainterBackend, std::ostream &) const override;
+  void PlotBandStructure(std::ostream &) const override;
+  void PlotBrillouinZone(PainterBackend, std::ostream &) const;
 };
 
 using SingleOrbitalTwoDimensionalLattice = TwoDimensionalLattice<1>;
+using SpinfulTwoDimensionalLattice = TwoDimensionalLattice<2>;
 
-/*
-  template <size_t Orbitals>
-  void OneDimensionalLattice<Orbitals>::Plot(PainterBackend backend, std::ostream &out) const {
+template <size_t Orbitals>
+void OneDimensionalLattice<Orbitals>::Plot(PainterBackend backend, std::ostream &out) const {
   auto plotter = PainterFactory::create(backend, out);
   plotter->Prepare();
-  for (const auto &site : sites()) {
-  for (int i = -1; i <= 1; i++) {
-  Point<1> p = site.position.translated(i * m_a1);
-  plotter->DrawPoint(p[0], 0.0);
-  for (const auto &edge : site.edges) {
-  Point<1> to_position = this->site(edge.dst).position.translated(edge.offset[0] * m_a1);
-  plotter->DrawLine(p[0], 0.0, to_position[0], 0.0);
+  for (const NodeType &node : this->graph().nodes()) {
+    for (int i = -1; i <= 1; i++) {
+      VectorType p = node.position() + i * this->lattice_vector(0);
+      plotter->DrawPoint(p[0], 0.0);
+    }
   }
-  }
+  for (const auto &edge : this->graph().edges()) {
+    for (int i = -1; i <= 1; i++) {
+      VectorType p = this->site(edge.src).position + i * this->lattice_vector(0);
+      VectorType offset = edge.offset[0] * this->lattice_vector(0) + i * this->lattice_vector(0);
+      VectorType to_position = this->site(edge.dst).position + offset;
+      plotter->DrawLine(p[0], 0.0, to_position[0], 0.0);
+    }
   }
   plotter->Finish();
-  }
-
+}
+/*
   void OneDimensionalLattice::PlotBandStructure(std::ostream &out) const {
   out << "\\documentclass[border=10pt]{standalone}" << '\n';
   out << "\\usepackage{pgfplots}" << '\n';

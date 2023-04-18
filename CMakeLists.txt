@@ -21,7 +21,7 @@ if (BUILD_TESTING)
     include(CTest)
     add_subdirectory(test)
 
-    if (CCTB_ENABLE_COVERAGE)
+    if (CCTB_ENABLE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU")
        include(CodeCoverage)
    
        target_compile_options(cctb-test PRIVATE --coverage)
