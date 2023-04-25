@@ -93,6 +93,57 @@ class GrapheneLatticeTest : public TwoDimensionalLattice<1> {
   }
 };
 
+class SquareLatticeExtended : public TwoDimensionalLattice<1> {
+ public:
+  using NumberType = double;
+  using ComplexType = std::complex<NumberType>;
+  using VectorType = Eigen::Vector<NumberType, 2>;
+  using MatrixType = Eigen::Matrix<NumberType, 1, 1>;
+
+  SquareLatticeExtended() : TwoDimensionalLattice(VectorType(2.0, 0), VectorType(0, 2.0)) {
+    MatrixType onsite = MatrixType::Zero();
+    MatrixType hopping = MatrixType::Identity();
+
+    add_site(0, VectorType(0, 0), onsite);
+    add_site(1, VectorType(1, 0), onsite);
+    add_site(2, VectorType(0, 1), onsite);
+    add_site(3, VectorType(1, 1), onsite);
+
+    add_edge(0, 1, {0, 0}, hopping);
+    add_edge(0, 2, {0, 0}, hopping);
+    add_edge(1, 3, {0, 0}, hopping);
+    add_edge(2, 3, {0, 0}, hopping);
+
+    add_edge(1, 0, {1, 0}, hopping);
+    add_edge(2, 0, {0, 1}, hopping);
+    add_edge(3, 1, {0, 1}, hopping);
+    add_edge(3, 2, {1, 0}, hopping);
+  }
+};
+
+class LiebLattice : public TwoDimensionalLattice<1> {
+ public:
+  using NumberType = double;
+  using Complex = std::complex<NumberType>;
+  using Vector = Eigen::Vector<NumberType, 2>;
+  using Matrix = Eigen::Matrix<Complex, 1, 1>;
+
+  LiebLattice() : TwoDimensionalLattice(Vector(2.0, 0.0), Vector(0.0, 2.0)) {
+    Matrix onsite = Matrix::Zero();
+    Matrix hopping = Matrix::Identity();
+
+    add_site(0, Vector(0.0, 0.0), onsite);
+    add_site(1, Vector(1.0, 0.0), onsite);
+    add_site(2, Vector(0.0, 1.0), onsite);
+
+    add_edge(0, 1, {0, 0}, hopping);
+    add_edge(0, 2, {0, 0}, hopping);
+
+    add_edge(1, 0, {1, 0}, hopping);
+    add_edge(2, 0, {0, 1}, hopping);
+  }
+};
+
 class GrapheneLatticeRashba : public TwoDimensionalLattice<2> {
  public:
   using NumberType = double;
@@ -158,17 +209,16 @@ class GrapheneLatticeExtended : public TwoDimensionalLattice<1> {
     add_edge(2, 3, {0, 1}, hopping);
   }
 };
-
 int main(void) {
-  GrapheneLatticeRashba lattice;
-  lattice.statistics();
+  SquareLatticeExtended lattice;
+  // lattice.statistics();
   // std::cout << lattice.hopping_matrix({0.5, 0.8}) << std::endl;
 
-  // std::ofstream lattice_file("lattice.asy");
-  // lattice.Plot(PainterBackend::kAsymptote, lattice_file);
+  std::ofstream lattice_file("lattice.tex");
+  lattice.Plot(PainterBackend::kTikz, lattice_file);
   // std::ofstream bz_file("bz.asy");
   // lattice.PlotBrillouinZone(PainterBackend::kAsymptote, bz_file);
-  // std::ofstream band_file("band_new.tex");
-  // lattice.PlotBandStructure(band_file);
+  std::ofstream band_file("band_new.tex");
+  lattice.PlotBandStructure(band_file);
   return 0;
 }
